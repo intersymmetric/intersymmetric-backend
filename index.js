@@ -24,7 +24,7 @@ wss.getID = () => {
 }
 
 wss.on('connection', (ws) => {
-    users["connections"] = users.connections + 1;
+    users.connections = wss.clients.size;
     // Update every user about the new connection
     wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -34,8 +34,10 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify(data)); // on connection immediately update
     ws.id = wss.getID();
 
+    //make this shit update the number of users when they close
+
     // When we get a message from a client
-    ws.on('message', function(message){
+    ws.on('message', (message) => {
         // Update internal data structure here
         let d = message.split(',')
         let key = d[0]
@@ -48,5 +50,4 @@ wss.on('connection', (ws) => {
             }
         });
     })
-
 })
