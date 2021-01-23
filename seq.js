@@ -1,15 +1,31 @@
 // https://stackoverflow.com/questions/13364243/websocketserver-node-js-how-to-differentiate-clients
 let fs = require('fs');
-var https = require('https');
-
-let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
-let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
-let credentials = {key : privateKey, cert: certificate}
-let httpsServer = https.createServer(credentials);
-httpsServer.listen(8080);
-
+let http = require('http')
+let https = require('https');
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({server: httpsServer});
+
+
+
+const env = process.argv[2]
+let server;
+
+if (env == 'live') {
+    // Cert for SSL
+    // This is called in production to make a live server
+    let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
+    let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
+    let credentials = {key : privateKey, cert: certificate}
+    let server = https.createServer(credentials).listen(8080);
+    console.log('Booting SSL/HTTPS Server')
+
+} else {
+    // This is called in local production where we just need a http server
+    server = http.createServer().listen(8080);
+    console.log('Booting HTTP Server')
+}
+
+const wss = new WebSocket.Server({server: server})
+
 
 let data = {
     "type" : "data",
