@@ -1,7 +1,15 @@
 // https://stackoverflow.com/questions/13364243/websocketserver-node-js-how-to-differentiate-clients
+let fs = require('fs');
+var https = require('https');
+
+let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
+let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
+let credentials = {key : privateKey, cert: certificate}
+let httpsServer = https.createServer(credentials);
+httpsServer.listen(8080);
 
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({server: httpsServer});
 
 let data = {
     "type" : "data",
@@ -56,7 +64,6 @@ wss.on('connection', (ws) => {
         let d = message.split(/,/)
         let key = d.shift()
         let val = d.join(',')
-        console.log(key, val)
         data[key] = JSON.parse(val)
         // Broadcast data to everyone else on slider changes
         wss.clients.forEach((client) => {
