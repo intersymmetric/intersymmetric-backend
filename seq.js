@@ -5,9 +5,23 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 let data = {
     "type" : "data",
-    "a" : 1000,
-    "b" : 1001,
+	"grid" : [
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+		{state: false, emph: false},
+	],
+	"numSteps" : 9,
+	"bpm" : 120,
+	"play" : false
 }
+
+// Setup Grid
 
 let users = {
     "type" : "users",
@@ -39,10 +53,11 @@ wss.on('connection', (ws) => {
     // When we get a message from a client
     ws.on('message', (message) => {
         // Update internal data structure here
-        let d = message.split(',')
-        let key = d[0]
-        let val = parseInt(d[1])
-        data[key] = val
+        let d = message.split(/,/)
+        let key = d.shift()
+        let val = d.join(',')
+        console.log(key, val)
+        data[key] = JSON.parse(val)
         // Broadcast data to everyone else on slider changes
         wss.clients.forEach((client) => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
