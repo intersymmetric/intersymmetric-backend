@@ -15,7 +15,7 @@ if (env == 'live') {
     let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
     let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
     let credentials = {key : privateKey, cert: certificate}
-    let server = https.createServer(credentials).listen(8080);
+    server = https.createServer(credentials).listen(8080);
     console.log('Booting SSL/HTTPS Server')
 
 } else {
@@ -26,30 +26,38 @@ if (env == 'live') {
 
 const wss = new WebSocket.Server({server: server})
 
+let grid = {
+    id: 'grid',
+    value: [
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false}
+]}
 
-let data = {
-    "type" : "data",
-	"grid" : [
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-		{state: false, emph: false},
-	],
-	"numSteps" : 9,
-	"bpm" : 120,
-	"play" : false
+let numSteps = {
+    id: 'numSteps',
+    value: 9
 }
 
-// Setup Grid
+let play = {
+    id: 'play',
+    value : false
+}
+
+let bpm = {
+    id: 'bpm',
+    value: 120
+}
 
 let users = {
-    "type" : "users",
-    "connections" : 0
+    id: 'users',
+    connections : 0
 }
 
 // Unique IDs for each connection
@@ -77,15 +85,21 @@ wss.on('connection', (ws) => {
     // When we get a message from a client
     ws.on('message', (message) => {
         // Update internal data structure here
-        let d = message.split(/,/)
-        let key = d.shift()
-        let val = d.join(',')
-        data[key] = JSON.parse(val)
-        // Broadcast data to everyone else on slider changes
-        wss.clients.forEach((client) => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(data));
-            }
-        });
+        console.log(message);
+        // client.send(JSON.stringify(grid));
+        // client.send(JSON.stringify(numSteps));
+        // client.send(JSON.stringify(play));
+        // client.send(JSON.stringify(numSteps));
+        // client.send(JSON.stringify(bpm));
+        // let d = message.split(/,/)
+        // let key = d.shift()
+        // let val = d.join(',')
+        // data[key] = JSON.parse(val)
+        // // Broadcast data to everyone else on slider changes
+        // wss.clients.forEach((client) => {
+        //     if (client !== ws && client.readyState === WebSocket.OPEN) {
+        //         client.send(JSON.stringify(data));
+        //     }
+        // });
     })
 })
