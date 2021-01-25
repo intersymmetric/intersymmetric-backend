@@ -1,12 +1,11 @@
-// https://stackoverflow.com/questions/13364243/websocketserver-node-js-how-to-differentiate-clients
-let fs = require('fs');
-let http = require('http')
-let https = require('https');
-const WebSocket = require('ws');
+const fs = require('fs');
+const http = require('http')
+const https = require('https');
+const io = require('socket.io')
 
-
-
+const port = 4300;
 const env = process.argv[2]
+
 let server;
 
 if (env == 'live') {
@@ -15,20 +14,20 @@ if (env == 'live') {
     let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
     let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
     let credentials = {key : privateKey, cert: certificate}
-    server = https.createServer(credentials).listen(8080);
+    server = https.createServer(credentials).listen(port);
     console.log('Booting SSL/HTTPS Server')
 
 } else {
     // This is called in local production where we just need a http server
-    server = http.createServer().listen(8080);
+    server = http.createServer().listen(port);
     console.log('Booting HTTP Server')
 }
 
-const wss = new WebSocket.Server({server: server})
+let backend = io(server, {cors: {origin: "*"}});
 
-let grid = {
-    id: 'grid',
-    value: [
+let numUsers = 0;
+
+let grid = [
     {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false},
@@ -38,68 +37,31 @@ let grid = {
     {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false}
-]}
+]
 
-let numSteps = {
-    id: 'numSteps',
-    value: 9
-}
+let play = false;
+let bpm = 120;
 
-let play = {
-    id: 'play',
-    value : false
-}
+backend.on('connection', (socket) => {
+	
+    numUsers += 1
+    backend.sockets.emit('numUsers', numUsers);
 
-let bpm = {
-    id: 'bpm',
-    value: 120
-}
+    // When a user disconnects update the number of users
 
-let users = {
-    id: 'users',
-    connections : 0
-}
-
-// Unique IDs for each connection
-const s4 = () => {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-wss.getID = () => {
-    return s4() + s4() + '-' + s4();
-}
-
-wss.on('connection', (ws) => {
-    users.connections = wss.clients.size;
-    // Update every user about the new connection
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(users))
-        }
+    socket.on('disconnect', (user) => {
+        numUsers += -1
+        backend.sockets.emit('numUsers', numUsers)
     })
-    ws.send(JSON.stringify(data)); // on connection immediately update
-    ws.id = wss.getID();
 
-    //make this shit update the number of users when they close
+    // update each user with the current data
+    socket.emit('bpm', bpm);
+    socket.emit('play', play);
+    socket.emit('grid', grid);
 
-    // When we get a message from a client
-    ws.on('message', (message) => {
-        // Update internal data structure here
-        console.log(message);
-        // client.send(JSON.stringify(grid));
-        // client.send(JSON.stringify(numSteps));
-        // client.send(JSON.stringify(play));
-        // client.send(JSON.stringify(numSteps));
-        // client.send(JSON.stringify(bpm));
-        // let d = message.split(/,/)
-        // let key = d.shift()
-        // let val = d.join(',')
-        // data[key] = JSON.parse(val)
-        // // Broadcast data to everyone else on slider changes
-        // wss.clients.forEach((client) => {
-        //     if (client !== ws && client.readyState === WebSocket.OPEN) {
-        //         client.send(JSON.stringify(data));
-        //     }
-        // });
-    })
+    // Now respond to individual clients messages
+    socket.on('bpm', (e) => {socket.broadcast.emit('bpm', e)});
+    socket.on('grid', (e) => {socket.broadcast.emit('grid', e)});
+    socket.on('play', (e) => {socket.broadcast.emit('play', e)});
+    
 })
