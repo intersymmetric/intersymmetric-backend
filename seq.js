@@ -3,7 +3,7 @@ const http = require('http')
 const https = require('https');
 const io = require('socket.io')
 
-const port = 4300;
+const port = 8080;
 const env = process.argv[2]
 
 let server;
@@ -23,7 +23,14 @@ if (env == 'live') {
     console.log('Booting HTTP Server')
 }
 
-let backend = io(server, {cors: {origin: "*"}});
+let backend = io(server, 
+	{
+		cors: {
+			origin: true, 
+			methods: ['GET', 'PATCH', 'PUT', 'POST']
+		}
+	}
+);
 
 let numUsers = 0;
 
