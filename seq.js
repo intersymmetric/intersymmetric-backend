@@ -23,7 +23,14 @@ if (env == 'live') {
     console.log('Booting HTTP Server')
 };
 
-let backend = io(server, {cors: {origin: "*"}});
+let backend = io(server, 
+	{
+		cors: {
+			origin: true, 
+			methods: ['GET', 'PATCH', 'PUT', 'POST']
+		}
+	}
+);
 
 let numUsers = 0;
 
