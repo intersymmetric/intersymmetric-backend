@@ -1,10 +1,10 @@
 const fs = require('fs');
-const http = require('http')
+const http = require('http');
 const https = require('https');
-const io = require('socket.io')
+const io = require('socket.io');
 
 const port = 4300;
-const env = process.argv[2]
+const env = process.argv[2];
 
 let server;
 
@@ -21,13 +21,18 @@ if (env == 'live') {
     // This is called in local production where we just need a http server
     server = http.createServer().listen(port);
     console.log('Booting HTTP Server')
-}
+};
 
 let backend = io(server, {cors: {origin: "*"}});
 
 let numUsers = 0;
 
-let grid = [
+let gridTemplate = [
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
+    {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false},
@@ -37,14 +42,21 @@ let grid = [
     {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false}
-]
+];
+
+let grid = {
+    'pluck' : gridTemplate,
+    'pad' : gridTemplate,
+    'kick' : gridTemplate,
+    'hats' : gridTemplate,
+};
 
 let play = false;
 let bpm = 120;
 
 backend.on('connection', (socket) => {
 	
-    numUsers += 1
+    numUsers += 1;
     backend.sockets.emit('numUsers', numUsers);
 
     // When a user disconnects update the number of users
@@ -52,7 +64,7 @@ backend.on('connection', (socket) => {
     socket.on('disconnect', (user) => {
         numUsers += -1
         backend.sockets.emit('numUsers', numUsers)
-    })
+    });
 
     // update each user with the current data
     socket.emit('bpm', bpm);
@@ -60,8 +72,22 @@ backend.on('connection', (socket) => {
     socket.emit('grid', grid);
 
     // Now respond to individual clients messages
-    socket.on('bpm', (e) => {socket.broadcast.emit('bpm', e)});
-    socket.on('grid', (e) => {socket.broadcast.emit('grid', e)});
-    socket.on('play', (e) => {socket.broadcast.emit('play', e)});
+    // Broadcast changes to every other client
+    // Update internal data
+    socket.on('bpm', (e) => {
+        socket.broadcast.emit('bpm', e);
+        bpm = e;
+    });
+    socket.on('grid', (e) => {
+        socket.broadcast.emit('grid', e);
+        grid = e;
+    });
+    socket.on('play', (e) => {
+        socket.broadcast.emit('play', e);
+        play = e;
+    });
+    socket.on('sync', (e) => {
+        socket.broadcast.emit('sync', e);
+    });
     
 })
