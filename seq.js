@@ -34,6 +34,8 @@ let backend = io(server,
 
 let numUsers = 0;
 
+let chat = [];
+
 let gridTemplate = [
     {state: true, emph: false},
     {state: false, emph: false},
@@ -77,6 +79,7 @@ backend.on('connection', (socket) => {
     socket.emit('bpm', bpm);
     socket.emit('play', play);
     socket.emit('grid', grid);
+    socket.emit('chat', chat)
 
     // Now respond to individual clients messages
     // Broadcast changes to every other client
@@ -96,5 +99,13 @@ backend.on('connection', (socket) => {
     socket.on('sync', (e) => {
         socket.broadcast.emit('sync', e);
     });
+
+    socket.on('chat', (e) => {
+        if (chat.length >= 10) {
+            chat = chat.slice(1, 10);
+        }
+        chat.push(socket.id.slice(0, 3) + ': ' + e);
+        backend.sockets.emit('chat', chat);
+    })
     
 })
