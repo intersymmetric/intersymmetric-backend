@@ -35,7 +35,7 @@ let backend = io(server,
 let numUsers = 0;
 
 let gridTemplate = [
-    {state: false, emph: false},
+    {state: true, emph: false},
     {state: false, emph: false},
     {state: false, emph: false},
     {state: false, emph: false},
