@@ -71,33 +71,66 @@ backend.on('connection', (socket) => {
     socket.emit('bpm', bpm);
     socket.emit('play', play);
     socket.emit('grid', grid);
-    socket.emit('chat', chat)
+    socket.emit('chat', chat);
+    socket.emit('clock::mode', clockMode);
+    socket.emit('params', params);
 
-    // Now respond to individual clients messages
-    // Broadcast changes to every other client
-    // Update internal data
+    // KICK
+    socket.on('params::kick', (parameter, data) => {
+        params.kick[parameter] = data
+        socket.broadcast.emit('params::kick::'+parameter, data)
+    })
+
+    // METAL 1
+    socket.on('params::metal_one', (parameter, data) => {
+        params.metal_one[parameter] = data
+        socket.broadcast.emit('params::metal_one::'+parameter, data)
+    })
+
+    // METAL 2
+    socket.on('params::metal_two', (parameter, data) => {
+        params.metal_two[parameter] = data
+        socket.broadcast.emit('params::metal_two::'+parameter, data)
+    })
+
+    // LOW TOM
+    socket.on('params::tomLow', (parameter, data) => {
+        params.tomLow[parameter] = data
+        socket.broadcast.emit('params::tomLow::'+parameter, data)
+    })
+
+    // HIGH TOM
+    socket.on('params::tomHi', (parameter, data) => {
+        params.tomHi[parameter] = data
+        socket.broadcast.emit('params::tomHi::'+parameter, data)
+    })
+
+    // SNARE
+    socket.on('params::snare', (parameter, data) => {
+        params.snare[parameter] = data
+        socket.broadcast.emit('params::snare::'+parameter, data)
+    })
+
+    // Now respond to individual clients messages then broadcast changes to every other client
+    // Update internal data too
     socket.on('bpm', (e) => {
-        socket.broadcast.emit('bpm', e);
         bpm = e;
+        socket.broadcast.emit('bpm', e);
     });
     socket.on('grid', (e) => {
-        socket.broadcast.emit('grid', e);
         grid = e;
+        socket.broadcast.emit('grid', e);
     });
     socket.on('play', (e) => {
-        socket.broadcast.emit('play', e);
         play = e;
+        socket.broadcast.emit('play', e);
     });
     socket.on('sync', (e) => {
         socket.broadcast.emit('sync', e);
     });
 
-    socket.on('chat', (e) => {
-        if (chat.length >= 10) {
-            chat = chat.slice(1, 10);
-        }
-        chat.push(socket.id.slice(0, 3) + ': ' + e);
-        backend.sockets.emit('chat', chat);
-    })
-    
+    socket.on('clock::mode', (e) => {
+        clockMode = e;
+        socket.broadcast.emit('clock::mode', e);
+    }); 
 })
