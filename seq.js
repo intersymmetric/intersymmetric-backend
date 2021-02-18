@@ -53,6 +53,8 @@ for (let i=0; i < numInstruments; i++) {
 
 let play = false;
 let bpm = 120;
+let clockMode = "forward";
+let params = parameters.base;
 
 backend.on('connection', (socket) => {
 	
