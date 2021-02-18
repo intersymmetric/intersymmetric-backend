@@ -56,16 +56,15 @@ let bpm = 120;
 let clockMode = "forward";
 let params = parameters.base;
 
+
 backend.on('connection', (socket) => {
-	
     numUsers += 1;
     backend.sockets.emit('numUsers', numUsers);
 
     // When a user disconnects update the number of users
-
     socket.on('disconnect', (user) => {
-        numUsers += -1
-        backend.sockets.emit('numUsers', numUsers)
+        numUsers -= 1;
+        backend.sockets.emit('numUsers', numUsers);
     });
 
     // update each user with the current data
