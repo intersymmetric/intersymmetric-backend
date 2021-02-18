@@ -32,34 +32,10 @@ let backend = io(server,
 		}
 	}
 );
-
 let numUsers = 0;
 
 let chat = [];
 
-let gridTemplate = [
-    {state: true, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false},
-    {state: false, emph: false}
-];
-
-let grid = {
-    'pluck' : gridTemplate,
-    'pad' : gridTemplate,
-    'kick' : gridTemplate,
-    'hats' : gridTemplate,
-};
 
 let play = false;
 let bpm = 120;
