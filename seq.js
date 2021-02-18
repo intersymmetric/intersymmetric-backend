@@ -69,6 +69,7 @@ backend.on('connection', (socket) => {
 
     // update each user with the current data
     socket.emit('bpm', bpm);
+    socket.emit('sync', 0);
     socket.emit('play', play);
     socket.emit('grid', grid);
     socket.emit('chat', chat);
