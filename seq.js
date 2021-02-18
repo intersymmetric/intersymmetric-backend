@@ -2,6 +2,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const io = require('socket.io');
+let parameters = require('./parameters.js')
 
 const port = 4300;
 const env = process.argv[2];
