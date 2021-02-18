@@ -36,6 +36,20 @@ let numUsers = 0;
 
 let chat = [];
 
+const numInstruments = 6;
+const numSteps = 16;
+
+// Grid
+let grid = []; // 4 instruments
+
+for (let i=0; i < numInstruments; i++) {
+    grid.push([]);
+    for (let j=0; j < numSteps; j++) {
+        grid[i].push(
+            Math.random() > 0.5
+        );
+    }
+}
 
 let play = false;
 let bpm = 120;
