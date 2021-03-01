@@ -5,7 +5,8 @@ module.exports = {
             attack: 0.01,
             decay: 0.498,
             sustain: 0.001,
-            release: 0.49
+            release: 0.49,
+            order : 1
         },
         kick : {
             frequency : 43,
@@ -13,21 +14,24 @@ module.exports = {
             attack : 0.001,
             decay : 0.05,
             sustain : 1.0,
-            release : 1.25
+            release : 1.25,
+            distortion : 0.0,
         },
-        metal_one : {
+        metalOne : {
             frequency : 28,
             harmonicity : 5.1,
             modulationIndex : 20.41,
             resonance : 3753,
             octaves : 2.75,
+            order : 1
         },
-        metal_two : {
+        metalTwo : {
             frequency : 5000,
             harmonicity : 0.2,
             modulationIndex : 22.21,
             resonance : 5000,
             octaves : 0,
+            order : 1
         },
         tomLow : {
             frequency : 54.23,
