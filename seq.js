@@ -83,15 +83,15 @@ backend.on('connection', (socket) => {
     })
 
     // METAL 1
-    socket.on('params::metal_one', (parameter, data) => {
-        params.metal_one[parameter] = data
-        socket.broadcast.emit('params::metal_one::'+parameter, data)
+    socket.on('params::metalOne', (parameter, data) => {
+        params.metalOne[parameter] = data
+        socket.broadcast.emit('params::metalOne::'+parameter, data)
     })
 
     // METAL 2
-    socket.on('params::metal_two', (parameter, data) => {
-        params.metal_two[parameter] = data
-        socket.broadcast.emit('params::metal_two::'+parameter, data)
+    socket.on('params::metalTwo', (parameter, data) => {
+        params.metalTwo[parameter] = data
+        socket.broadcast.emit('params::metalTwo::'+parameter, data)
     })
 
     // LOW TOM
