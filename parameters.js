@@ -17,7 +17,7 @@ module.exports = {
             release : 1.25,
             distortion : 0.0,
         },
-        metalOne : {
+        metal1 : {
             frequency : 28,
             harmonicity : 5.1,
             modulationIndex : 20.41,
@@ -25,7 +25,7 @@ module.exports = {
             octaves : 2.75,
             order : 1
         },
-        metalTwo : {
+        metal2 : {
             frequency : 5000,
             harmonicity : 0.2,
             modulationIndex : 22.21,
@@ -33,24 +33,54 @@ module.exports = {
             octaves : 0,
             order : 1
         },
-        tomLow : {
-            frequency : 54.23,
-            octaves : 7,
-            pitchDecay : 0.05,
-            attack : 0.0,
-            decay : 0.15,
-            sustain : 0.001,
-            release : 0.9
+        fm1 : {
+            frequency : 440,
+            c1ratio : 1.0,
+            c2ratio : 1.0,
+            c3ratio : 1.0,
+            fm2to1 : 0.0,
+            fm3to1 : 0.0,
+            fm3to2 : 0.0,
+            c1env : 1,
+            c2env : 1,
+            c3env : 1
         },
-        tomHi : {
-            frequency : 639.75,
-            octaves : 1.0,
-            pitchDecay : 0.001,
-            attack : 0.001,
-            decay : 0.6,
-            sustain : 0.01,
-            release : 1.0
+        fm2 : {
+            frequency : 440,
+            c1ratio : 1.0,
+            c2ratio : 1.0,
+            c3ratio : 1.0,
+            fm2to1 : 0.0,
+            fm3to1 : 0.0,
+            fm3to2 : 0.0,
+            c1env : 1,
+            c2env : 1,
+            c3env : 1
         },
+        fm3 : {
+            frequency : 440,
+            c1ratio : 1.0,
+            c2ratio : 1.0,
+            c3ratio : 1.0,
+            fm2to1 : 0.0,
+            fm3to1 : 0.0,
+            fm3to2 : 0.0,
+            c1env : 1,
+            c2env : 1,
+            c3env : 1
+        },
+        fm4 : {
+            frequency : 440,
+            c1ratio : 1.0,
+            c2ratio : 1.0,
+            c3ratio : 1.0,
+            fm2to1 : 0.0,
+            fm3to1 : 0.0,
+            fm3to2 : 0.0,
+            c1env : 1,
+            c2env : 1,
+            c3env : 1
+        }
 
     }
 }
