@@ -47,15 +47,16 @@ let blankEuclid = new Array(numInstruments)
 
 let grid = {}
 let params = {}
-let clockMode = {}
+let clock = {}
 let bpm = {};
 let play = {}
 let euclid = {};
-
+let velocity = {};
+let length = {};
 let rooms = {};
 let users = {}
 
-const getRoom = id => users[id]
+const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
 
@@ -81,17 +82,30 @@ backend.on('connection', socket => {
                 bpm[room] = 120
                 play[room] = false
                 euclid[room] = new Array(numInstruments).fill(new Array(numSteps).fill(0))
-                clockMode[room] = "forward"
+                clock[room] = {
+                    mode : 'forward', 
+                    multiplier: 1, 
+                    offset : {
+                        start : 0,
+                        end : 16
+                    }
+                }
+                velocity[room] = 1.0
+                length[room] = 0.1
             }
             
             // Update this socket with the new data
             backend.to(room).emit('bpm', bpm[room]);
             backend.to(room).emit('play', play[room]);
             backend.to(room).emit('grid', grid[room]);
-            backend.to(room).emit('clock::mode', clockMode[room]);
+            backend.to(room).emit('clock::mode', clock[room].mode);
+            backend.to(room).emit('clock::multiplier', clock[room].multiplier);
+            backend.to(room).emit('clock::offset', clock[room].offset);
             backend.to(room).emit('params', params[room]);
-            backend.to(room).emit('numUsers', rooms[room].numUsers)
-            backend.to(room).emit('euclid', euclid[room])
+            backend.to(room).emit('numUsers', rooms[room].numUsers);
+            backend.to(room).emit('euclid', euclid[room]);
+            backend.to(room).emit('velocity', velocity[room])
+            backend.to(room).emit('length', length[room])
         }
     })
 
@@ -102,16 +116,7 @@ backend.on('connection', socket => {
         delete users[socket.id]
         if (room !== undefined) {
             rooms[room].numUsers -= 1
-            // if (rooms[room].numUsers <= 0) {
-            //     delete rooms[room]
-            //     delete grid[room]
-            //     delete params[room]
-            //     delete bpm[room]
-            //     delete play[room]
-            //     delete euclid[room]
-            // }
         }
-        console.log(rooms)
     });
 
     // KICK
@@ -154,17 +159,6 @@ backend.on('connection', socket => {
         socket.to(room).emit('params::fm2::'+parameter, data)
     })
 
-    socket.on('params::fm3', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].fm3[parameter] = data
-        socket.to(room).emit('params::fm3::'+parameter, data)
-    })    
-    socket.on('params::fm4', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].fm4[parameter] = data
-        socket.to(room).emit('params::fm4::'+parameter, data)
-    })
-
     // Now respond to individual clients messages then broadcast changes to every other client
     // Update internal data too
     socket.on('bpm', (data) => {
@@ -185,13 +179,37 @@ backend.on('connection', socket => {
 
     socket.on('clock::mode', (data) => {
         let room = getRoom(socket.id)
-        clockMode[room] = data;
+        clock[room].mode = data;
         socket.to(room).emit('clock::mode', data);
     }); 
+
+    socket.on('clock::multiplier', data => {
+        let room = getRoom(socket.id);
+        clock[room].multiplier = data;
+        socket.to(room).emit('clock::multiplier', data);
+    })
+
+    socket.on('clock::offset', data => {
+        let room = getRoom(socket.id);
+        clock[room].offset = data;
+        socket.to(room).emit('clock::offset', data);
+    })
 
     socket.on('euclid', data => {
         let room = getRoom(socket.id)
         euclid[room] = data;
         socket.to(room).emit('euclid', data)
+    })
+
+    socket.on('velocity', data => {
+        let room = getRoom(socket.id);
+        velocity[room] = data;
+        socket.to(room).emit('velocity', data);
+    })
+
+    socket.on('length', data => {
+        let room = getRoom(socket.id);
+        length[room] = data;
+        socket.to(room).emit('length', data);
     })
 })
