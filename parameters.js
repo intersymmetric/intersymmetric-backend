@@ -23,7 +23,10 @@ module.exports = {
             modulationIndex : 20.41,
             resonance : 3753,
             octaves : 2.75,
-            order : 1
+            order : 1,
+            attack: 0.001,
+            decay: 1.4,
+            release: 0.2
         },
         metal2 : {
             frequency : 5000,
@@ -31,7 +34,10 @@ module.exports = {
             modulationIndex : 22.21,
             resonance : 5000,
             octaves : 0,
-            order : 1
+            order : 1,
+            attack: 0.001,
+            decay: 1.4,
+            release: 0.2
         },
         fm1 : {
             frequency : 440,
@@ -57,30 +63,5 @@ module.exports = {
             c2env : 1,
             c3env : 1
         },
-        fm3 : {
-            frequency : 440,
-            c1ratio : 1.0,
-            c2ratio : 1.0,
-            c3ratio : 1.0,
-            fm2to1 : 0.0,
-            fm3to1 : 0.0,
-            fm3to2 : 0.0,
-            c1env : 1,
-            c2env : 1,
-            c3env : 1
-        },
-        fm4 : {
-            frequency : 440,
-            c1ratio : 1.0,
-            c2ratio : 1.0,
-            c3ratio : 1.0,
-            fm2to1 : 0.0,
-            fm3to1 : 0.0,
-            fm3to2 : 0.0,
-            c1env : 1,
-            c2env : 1,
-            c3env : 1
-        }
-
     }
 }
