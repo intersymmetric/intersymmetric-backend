@@ -2,3 +2,4 @@
 /public/build/
 ssl-certs/
 .DS_Store
+log.txt
