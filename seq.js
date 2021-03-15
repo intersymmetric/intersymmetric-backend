@@ -59,8 +59,10 @@ let users = {}
 const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
+    console.log(socket.id, 'connected')
 
     socket.on('roomJoin', (room) => {
+        console.log(socket.id, 'created '+ room)
         // Check if user is already in a room
         if (users[socket.id] !== room) {
             if (socket.id in users) {
@@ -111,6 +113,7 @@ backend.on('connection', socket => {
 
     // When a user disconnects update the number of users
     socket.on('disconnect', (user) => {
+        console.log(socket.id, 'left')
         let room = getRoom(socket.id)
         socket.leave(room)
         delete users[socket.id]
