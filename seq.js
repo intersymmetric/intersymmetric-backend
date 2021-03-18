@@ -62,7 +62,7 @@ backend.on('connection', socket => {
     console.log(socket.id, 'connected')
 
     socket.on('roomJoin', (room) => {
-        console.log(socket.id, 'created '+ room)
+        console.log(socket.id, 'created '   + room)
         // Check if user is already in a room
         if (users[socket.id] !== room) {
             if (socket.id in users) {
@@ -83,7 +83,7 @@ backend.on('connection', socket => {
                 params[room] = parameters.base
                 bpm[room] = 120
                 play[room] = false
-                euclid[room] = new Array(numInstruments).fill(new Array(numSteps).fill(0))
+                euclid[room] = [0, 0, 0, 0, 0, 0]
                 clock[room] = {
                     mode : 'forward', 
                     multiplier: 1, 
@@ -199,6 +199,7 @@ backend.on('connection', socket => {
     })
 
     socket.on('euclid', data => {
+    	console.log(data)
         let room = getRoom(socket.id)
         euclid[room] = data;
         socket.to(room).emit('euclid', data)
