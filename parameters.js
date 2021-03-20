@@ -15,7 +15,7 @@ module.exports = {
             decay : 0.05,
             sustain : 1.0,
             release : 1.25,
-            distortion : 0.0,
+            distortion : 0.0
         },
         metal1 : {
             frequency : 28,
@@ -49,7 +49,10 @@ module.exports = {
             fm3to2 : 0.0,
             c1env : 1,
             c2env : 1,
-            c3env : 1
+            c3env : 1,
+            op1gain : 1,
+            op2gain : 1,
+            op3gain : 1
         },
         fm2 : {
             frequency : 440,
@@ -61,7 +64,10 @@ module.exports = {
             fm3to2 : 0.0,
             c1env : 1,
             c2env : 1,
-            c3env : 1
+            c3env : 1,
+            op1gain : 1,
+            op2gain : 1,
+            op3gain : 1
         },
     }
 }
