@@ -41,10 +41,6 @@ let blankGrid = new Array(numInstruments)
             .fill(false)
     );
 
-let blankEuclid = new Array(numInstruments)
-    .fill(0);
-
-
 let grid = {}
 let params = {}
 let clock = {}
