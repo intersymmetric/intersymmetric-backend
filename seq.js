@@ -195,7 +195,6 @@ backend.on('connection', socket => {
     })
 
     socket.on('euclid', data => {
-    	console.log(data)
         let room = getRoom(socket.id)
         euclid[room] = data;
         socket.to(room).emit('euclid', data)
