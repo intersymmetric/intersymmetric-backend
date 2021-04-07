@@ -158,8 +158,6 @@ backend.on('connection', socket => {
         socket.to(room).emit('params::fm2::'+parameter, data)
     })
 
-    // Now respond to individual clients messages then broadcast changes to every other client
-    // Update internal data too
     socket.on('bpm', (data) => {
         let room = getRoom(socket.id)
         bpm[room] = data;
