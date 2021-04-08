@@ -50,25 +50,24 @@ let euclid = {};
 let velocity = {};
 let length = {};
 let rooms = {};
-let users = {}
+let users = {};
+let enabledStates = {};
 
 const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
-    console.log(socket.id, 'connected')
-
+    console.log(socket.id, 'connected');
+    backend.emit('rooms', rooms); // send everyone the rooms
     socket.on('roomJoin', (room) => {
         console.log(socket.id, 'created '   + room)
-        // Check if user is already in a room
-        if (users[socket.id] !== room) {
+        if (users[socket.id] !== room) { // Check if user is already in a room
             if (socket.id in users) {
                 let prevRoom = getRoom(socket.id)
                 socket.leave(prevRoom)
                 rooms[prevRoom].numUsers -= 1
             }
             socket.join(room)
-            // Now log their room in the users database
-            users[socket.id] = room
+            users[socket.id] = room // Now log their room in the users database
     
             // Does this room already exist?
             if (rooms.hasOwnProperty(room)) {
@@ -82,14 +81,24 @@ backend.on('connection', socket => {
                 euclid[room] = [0, 0, 0, 0, 0, 0]
                 clock[room] = {
                     mode : 'forward', 
-                    multiplier: 1, 
+                    multiplier: 0, 
                     offset : {
-                        start : 0,
+                        start : 1,
                         end : 16
                     }
                 }
                 velocity[room] = 1.0
                 length[room] = 0.1
+                enabledStates[room] = {
+                    grid: true,
+                    bpm: true,
+                    euclid: true,
+                    offset: true,
+                    globalVelocity: true,
+                    globalLength: true,
+                    multiplier: true,
+                    transforms: true
+                }
             }
             
             // Update this socket with the new data
@@ -104,6 +113,8 @@ backend.on('connection', socket => {
             backend.to(room).emit('euclid', euclid[room]);
             backend.to(room).emit('velocity', velocity[room])
             backend.to(room).emit('length', length[room])
+            backend.to(room).emit('enabledStates', enabledStates[room])
+            backend.emit('rooms', rooms); // send everyone the rooms
         }
     })
 
@@ -116,6 +127,7 @@ backend.on('connection', socket => {
         if (room !== undefined) {
             rooms[room].numUsers -= 1
         }
+        backend.emit('rooms', rooms); // send everyone the rooms
     });
 
     // KICK
@@ -208,5 +220,12 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         length[room] = data;
         socket.to(room).emit('length', data);
+    })
+
+    // ADMIN CONTROLS
+    socket.on('enabledStates', states => {
+        let room = getRoom(socket.id);
+        enabledStates[room] = states;
+        socket.to(room).emit('enabledStates', states)
     })
 })
