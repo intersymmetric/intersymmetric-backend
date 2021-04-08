@@ -6,7 +6,8 @@ module.exports = {
             decay: 0.498,
             sustain: 0.001,
             release: 0.49,
-            order : 1
+            order : 1,
+            membraneFreq: 160
         },
         kick : {
             frequency : 43,
