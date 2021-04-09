@@ -73,12 +73,12 @@ backend.on('connection', socket => {
             if (rooms.hasOwnProperty(room)) {
                 rooms[room].numUsers += 1
             } else { // No
-                rooms[room] = {numUsers : 1}
-                grid[room] = blankGrid.map(row => row.map(cell => Math.random() < 0.2))
-                params[room] = parameters.base
-                bpm[room] = 120
-                play[room] = false
-                euclid[room] = [0, 0, 0, 0, 0, 0]
+                rooms[room] = {numUsers : 1};
+                grid[room] = blankGrid.map(row => row.map(cell => Math.random() < 0.2));
+                params[room] = JSON.parse(JSON.stringify(parameters.base));
+                bpm[room] = 120;
+                play[room] = false;
+                euclid[room] = [0, 0, 0, 0, 0, 0];
                 clock[room] = {
                     mode : 'forward', 
                     multiplier: 0, 
@@ -86,9 +86,9 @@ backend.on('connection', socket => {
                         start : 1,
                         end : 16
                     }
-                }
-                velocity[room] = 1.0
-                length[room] = 0.1
+                };
+                velocity[room] = 1.0;
+                length[room] = 0.1;
                 enabledStates[room] = {
                     grid: true,
                     bpm: true,
@@ -98,7 +98,7 @@ backend.on('connection', socket => {
                     globalLength: true,
                     multiplier: true,
                     transforms: true
-                }
+                };
             }
             
             // Update this socket with the new data
