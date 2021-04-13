@@ -41,7 +41,7 @@ module.exports = {
             release: 0.2
         },
         fm1 : {
-            frequency : 440,
+            frequency : 90,
             c1ratio : 1.0,
             c2ratio : 1.0,
             c3ratio : 1.0,
@@ -56,7 +56,7 @@ module.exports = {
             op3gain : 1
         },
         fm2 : {
-            frequency : 440,
+            frequency : 110,
             c1ratio : 1.0,
             c2ratio : 1.0,
             c3ratio : 1.0,
