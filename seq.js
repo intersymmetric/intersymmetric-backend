@@ -74,7 +74,7 @@ backend.on('connection', socket => {
                 rooms[room].numUsers += 1
             } else { // No
                 rooms[room] = {numUsers : 1};
-                grid[room] = blankGrid.map(row => row.map(cell => Math.random() < 0.2));
+                grid[room] = blankGrid.map(row => row.map(cell => false));
                 params[room] = JSON.parse(JSON.stringify(parameters.base));
                 bpm[room] = 120;
                 play[room] = false;
