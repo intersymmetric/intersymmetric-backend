@@ -228,4 +228,9 @@ backend.on('connection', socket => {
         enabledStates[room] = states;
         socket.to(room).emit('enabledStates', states)
     })
+
+    socket.on('velocityList', (id, data) => {
+        let room = getRoom(socket.id);
+        socket.to(room).emit('velocityList', id, data);
+    })
 })
