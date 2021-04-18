@@ -7,7 +7,8 @@ module.exports = {
             sustain: 0.001,
             release: 0.49,
             order : 1,
-            membraneFreq: 160
+            membraneFreq: 160,
+            velocityList: []
         },
         kick : {
             frequency : 43,
@@ -16,7 +17,8 @@ module.exports = {
             decay : 0.05,
             sustain : 1.0,
             release : 1.25,
-            distortion : 0.0
+            distortion : 0.0,
+            velocityList: []
         },
         metal1 : {
             frequency : 28,
@@ -27,7 +29,8 @@ module.exports = {
             order : 1,
             attack: 0.001,
             decay: 1.4,
-            release: 0.2
+            release: 0.2,
+            velocityList: []
         },
         metal2 : {
             frequency : 5000,
@@ -38,7 +41,8 @@ module.exports = {
             order : 1,
             attack: 0.001,
             decay: 1.4,
-            release: 0.2
+            release: 0.2,
+            velocityList: []
         },
         fm1 : {
             frequency : 90,
@@ -53,7 +57,8 @@ module.exports = {
             c3env : 1,
             op1gain : 1,
             op2gain : 1,
-            op3gain : 1
+            op3gain : 1,
+            velocityList: []
         },
         fm2 : {
             frequency : 110,
@@ -68,7 +73,8 @@ module.exports = {
             c3env : 1,
             op1gain : 1,
             op2gain : 1,
-            op3gain : 1
+            op3gain : 1,
+            velocityList: []
         },
     }
 }
