@@ -52,6 +52,7 @@ let length = {};
 let rooms = {};
 let users = {};
 let enabledStates = {};
+let moveControl = {};
 
 const getRoom = id => users[id] // get room that user belongs to
 
@@ -99,6 +100,11 @@ backend.on('connection', socket => {
                     multiplier: true,
                     transforms: true
                 };
+                moveControl[room] = {
+                    maxCells: 5,
+                    prevInsertions: []
+                }
+
             }
             
             // Update this socket with the new data
@@ -111,9 +117,12 @@ backend.on('connection', socket => {
             backend.to(room).emit('params', params[room]);
             backend.to(room).emit('numUsers', rooms[room].numUsers);
             backend.to(room).emit('euclid', euclid[room]);
-            backend.to(room).emit('velocity', velocity[room])
-            backend.to(room).emit('length', length[room])
-            backend.to(room).emit('enabledStates', enabledStates[room])
+            backend.to(room).emit('velocity', velocity[room]);
+            backend.to(room).emit('length', length[room]);
+            backend.to(room).emit('enabledStates', enabledStates[room]);
+            backend.to(room).emit('maxCells', moveControl[room].maxCells);
+            backend.to(room).emit('prevInsertions', moveControl[room].prevInsertions);
+
             backend.emit('rooms', rooms); // send everyone the rooms
         }
     })
@@ -232,5 +241,15 @@ backend.on('connection', socket => {
     socket.on('velocityList', (id, data) => {
         let room = getRoom(socket.id);
         socket.to(room).emit('velocityList', id, data);
+    })
+
+    socket.on('maxCells', data => {
+        let room = getRoom(socket.id);
+        socket.to(room).emit('maxCells', data);
+    })
+
+    socket.on('prevInsertions', data => {
+        let room = getRoom(socket.id);
+        socket.to(room).emit('prevInsertions', data);
     })
 })
