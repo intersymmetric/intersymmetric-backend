@@ -53,6 +53,8 @@ let rooms = {};
 let users = {};
 let enabledStates = {};
 let moveControl = {};
+let pitchOffset = {};
+let mirrorPoint = {};
 
 const getRoom = id => users[id] // get room that user belongs to
 
@@ -77,6 +79,8 @@ backend.on('connection', socket => {
                 rooms[room] = {numUsers : 1};
                 grid[room] = blankGrid.map(row => row.map(cell => false));
                 params[room] = JSON.parse(JSON.stringify(parameters.base));
+                mirrorPoint[room] = 8;
+                pitchOffset[room] = 0;
                 bpm[room] = 120;
                 play[room] = false;
                 euclid[room] = [0, 0, 0, 0, 0, 0];
@@ -91,6 +95,9 @@ backend.on('connection', socket => {
                 velocity[room] = 1.0;
                 length[room] = 0.1;
                 enabledStates[room] = {
+                    maxCells: true,
+                    pitchOffset: true,
+                    mirrorPoint: true,
                     grid: true,
                     bpm: true,
                     euclid: true,
