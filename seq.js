@@ -93,7 +93,7 @@ backend.on('connection', socket => {
                     }
                 };
                 velocity[room] = 1.0;
-                length[room] = 0.1;
+                length[room] = 1.0;
                 enabledStates[room] = {
                     maxCells: true,
                     pitchOffset: true,
@@ -108,7 +108,7 @@ backend.on('connection', socket => {
                     transforms: true
                 };
                 moveControl[room] = {
-                    maxCells: 5,
+                    maxCells: 32,
                     prevInsertions: []
                 }
 
