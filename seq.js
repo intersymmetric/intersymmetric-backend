@@ -52,8 +52,9 @@ let length = {};
 let rooms = {};
 let users = {};
 let enabledStates = {};
-let moveControl = {};
 let pitchOffset = {};
+let maxCells = {};
+let prevInsertions = {};
 let mirrorPoint = {};
 
 const getRoom = id => users[id] // get room that user belongs to
@@ -107,11 +108,8 @@ backend.on('connection', socket => {
                     multiplier: true,
                     transforms: true
                 };
-                moveControl[room] = {
-                    maxCells: 32,
-                    prevInsertions: []
-                }
-
+                maxCells[room] = 32,
+                prevInsertions[room] = [];
             }
             
             // Update this socket with the new data
@@ -127,8 +125,9 @@ backend.on('connection', socket => {
             backend.to(room).emit('velocity', velocity[room]);
             backend.to(room).emit('length', length[room]);
             backend.to(room).emit('enabledStates', enabledStates[room]);
-            backend.to(room).emit('maxCells', moveControl[room].maxCells);
-            backend.to(room).emit('prevInsertions', moveControl[room].prevInsertions);
+            backend.to(room).emit('maxCells', maxCells[room]);
+            backend.to(room).emit('prevInsertions', prevInsertions[room]);
+            backend.to(room).emit('pitchOffset', pitchOffset[room]);
 
             backend.emit('rooms', rooms); // send everyone the rooms
         }
@@ -251,12 +250,21 @@ backend.on('connection', socket => {
     })
 
     socket.on('maxCells', data => {
+        console.log(data);
         let room = getRoom(socket.id);
+        maxCells[room] = data;
         socket.to(room).emit('maxCells', data);
     })
 
     socket.on('prevInsertions', data => {
         let room = getRoom(socket.id);
+        prevInsertions[room] = data;
         socket.to(room).emit('prevInsertions', data);
+    })
+
+    socket.on('pitchOffset', data => {
+        let room = getRoom(socket.id);
+        pitchOffset[room] = data;
+        socket.to(room).emit('pitchOffset', data)
     })
 })
