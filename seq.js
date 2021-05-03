@@ -57,13 +57,17 @@ let maxCells = {};
 let prevInsertions = {};
 let mirrorPoint = {};
 
+// Rewire stuff
+let sampleSelectors = {}
+let sampleGains = {}
+
 const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
     console.log(socket.id, 'connected');
     backend.emit('rooms', rooms); // send everyone the rooms
-    socket.on('roomJoin', (room) => {
-        console.log(socket.id, 'created '   + room)
+    socket.on('roomJoin', room => {
+        console.log(socket.id.slice(0, 5), 'created '+ room)
         if (users[socket.id] !== room) { // Check if user is already in a room
             if (socket.id in users) {
                 let prevRoom = getRoom(socket.id)
@@ -110,6 +114,8 @@ backend.on('connection', socket => {
                 };
                 maxCells[room] = 32,
                 prevInsertions[room] = [];
+                sampleSelectors[room] = [0, 1, 2, 3, 4, 5]
+                sampleGains[room] = new Array(6).fill(1.0);
             }
             
             // Update this socket with the new data
@@ -128,6 +134,8 @@ backend.on('connection', socket => {
             backend.to(room).emit('maxCells', maxCells[room]);
             backend.to(room).emit('prevInsertions', prevInsertions[room]);
             backend.to(room).emit('pitchOffset', pitchOffset[room]);
+            backend.to(room).emit('sampleSelectors', sampleSelectors[room])
+            backend.to(room).emit('sampleGains', sampleGains[room])
 
             backend.emit('rooms', rooms); // send everyone the rooms
         }
@@ -266,5 +274,17 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         pitchOffset[room] = data;
         socket.to(room).emit('pitchOffset', data)
+    })
+
+    socket.on('sampleSelectors', data => {
+        let room = getRoom(socket.id);
+        sampleSelectors[room] = data;
+        socket.to(room).emit('sampleSelectors', data);
+    })
+
+    socket.on('sampleGains', data => {
+        let room = getRoom(socket.id);
+        sampleGains[room] = data;
+        socket.to(room).emit('sampleGains', data);
     })
 })
