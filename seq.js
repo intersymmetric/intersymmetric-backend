@@ -60,6 +60,8 @@ let mirrorPoint = {};
 // Rewire stuff
 let sampleSelectors = {}
 let trackGains = {}
+let trackRates = {}
+let trackLengths = {}
 
 const getRoom = id => users[id] // get room that user belongs to
 
@@ -114,8 +116,10 @@ backend.on('connection', socket => {
                 };
                 maxCells[room] = 32,
                 prevInsertions[room] = [];
-                sampleSelectors[room] = [0, 1, 2, 3, 4, 5]
+                sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => Math.round(Math.random() * 30))
                 trackGains[room] = new Array(6).fill(1.0);
+                trackRates[room] = new Array(6).fill(1.0);
+                trackLengths[room] = new Array(6).fill(3.0);
             }
             
             // Update this socket with the new data
@@ -134,8 +138,9 @@ backend.on('connection', socket => {
             backend.to(room).emit('maxCells', maxCells[room]);
             backend.to(room).emit('prevInsertions', prevInsertions[room]);
             backend.to(room).emit('pitchOffset', pitchOffset[room]);
-            backend.to(room).emit('sampleSelectors', sampleSelectors[room])
-            backend.to(room).emit('trackGains', trackGains[room])
+            backend.to(room).emit('sampleSelectors', sampleSelectors[room]);
+            backend.to(room).emit('trackGains', trackGains[room]);
+            backend.to(room).emit('trackRates', trackRates[room]);
 
             backend.emit('rooms', rooms); // send everyone the rooms
         }
@@ -286,5 +291,17 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         trackGains[room] = data;
         socket.to(room).emit('trackGains', data);
+    })
+
+    socket.on('trackRates', data => {
+        let room = getRoom(socket.id);
+        trackRates[room] = data;
+        socket.to(room).emit('trackRates', data);
+    })
+
+    socket.on('trackLengths', data => {
+        let room = getRoom(socket.id);
+        trackLengths[room] = data;
+        socket.to(room).emit('trackLengths', data);
     })
 })
