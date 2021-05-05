@@ -275,6 +275,12 @@ backend.on('connection', socket => {
         socket.to(room).emit('prevInsertions', data);
     })
 
+    socket.on('mirrorPoint', data => {
+        let room = getRoom(socket.id);
+        mirrorPoint[room] = data;
+        socket.to(room).emit('mirrorPoint', data);
+    })
+
     socket.on('pitchOffset', data => {
         let room = getRoom(socket.id);
         pitchOffset[room] = data;
