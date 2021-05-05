@@ -205,8 +205,12 @@ backend.on('connection', socket => {
     });
     socket.on('grid', (data) => {
         let room = getRoom(socket.id)
-        grid[room] = data;
-        socket.to(room).emit('grid', data);
+        if (data.length === 6 && typeof(data) === 'object') {
+            console.log(data.length);
+            grid[room] = data;
+            socket.to(room).emit('grid', data);
+        }
+
     });
     socket.on('play', (data) => {
         let room = getRoom(socket.id)
