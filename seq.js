@@ -26,8 +26,8 @@ if (env == 'live') {
 
 let backend = io(server, {
 		cors: {
-			origin: true, 
-			methods: ['GET', 'PATCH', 'PUT', 'POST']
+			origin: '*',
+			methods: ['GET', 'POST']
 		}
 	}
 );
