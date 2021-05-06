@@ -203,13 +203,14 @@ backend.on('connection', socket => {
         bpm[room] = data;
         socket.to(room).emit('bpm', data);
     });
-    socket.on('grid', (data) => {
+    socket.on('grid', data => {
         let room = getRoom(socket.id)
-        if (data.length === 6 && typeof(data) === 'object') {
-            grid[room] = data;
-            socket.to(room).emit('grid', data);
+        if (data !== null) {
+            if (data.length === 6) {
+                grid[room] = data;
+                socket.to(room).emit('grid', data);
+            }
         }
-
     });
     socket.on('play', (data) => {
         let room = getRoom(socket.id)
