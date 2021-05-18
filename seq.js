@@ -58,15 +58,16 @@ let prevInsertions = {};
 let mirrorPoint = {};
 
 // Rewire stuff
-let sampleSelectors = {}
-let trackGains = {}
-let trackRates = {}
-let trackLengths = {}
+let sampleSelectors = {};
+let trackGains = {};
+let trackRates = {};
+let trackLengths = {};
 
 // No Bounds stuff
-let trackPitch = {}
-let trackSound = {}
-let trackShape = {}
+let trackPitch = {};
+let trackSound = {};
+let trackShape = {};
+let velocityPattern = {};
 
 const getRoom = id => users[id] // get room that user belongs to
 
@@ -117,7 +118,8 @@ backend.on('connection', socket => {
                     globalVelocity: true,
                     globalLength: true,
                     multiplier: true,
-                    transforms: true
+                    transforms: true,
+                    velocityPattern: true,
                 };
                 maxCells[room] = 32,
                 prevInsertions[room] = [];
@@ -127,7 +129,8 @@ backend.on('connection', socket => {
                 trackLengths[room] = new Array(6).fill(3.0);
                 trackPitch[room] = new Array(6).fill(0.0);
                 trackSound[room] = new Array(6).fill(0.5);
-                trackShape[room] = new Array(6).fill(0.5);
+                trackShape[room] = new Array(6).fill(1.0);
+                velocityPattern[room] = 1;
             }
             
             // Update this socket with the new data
@@ -152,6 +155,8 @@ backend.on('connection', socket => {
             backend.to(room).emit('trackShape', trackShape[room]);
             backend.to(room).emit('trackSound', trackSound[room]);
             backend.to(room).emit('trackPitch', trackPitch[room]);
+            backend.to(room).emit('velocityPattern', velocityPattern[room]);
+
             backend.emit('rooms', rooms); // send everyone the rooms
         }
     })
@@ -204,7 +209,6 @@ backend.on('connection', socket => {
     })
 
     socket.on('params::fm2', (parameter, data) => {
-        console.log(parameter, data)
         let room = getRoom(socket.id)
         params[room].fm2[parameter] = data
         socket.to(room).emit('params::fm2::'+parameter, data)
@@ -279,7 +283,6 @@ backend.on('connection', socket => {
     })
 
     socket.on('maxCells', data => {
-        console.log(data);
         let room = getRoom(socket.id);
         maxCells[room] = data;
         socket.to(room).emit('maxCells', data);
@@ -329,7 +332,6 @@ backend.on('connection', socket => {
 
     // No Bounds Meta Data
     socket.on('trackPitch', data => {
-        console.log(data)
         let room = getRoom(socket.id);
         trackPitch[room] = data;
         socket.to(room).emit('trackPitch', data);
