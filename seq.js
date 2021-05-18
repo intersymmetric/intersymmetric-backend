@@ -152,8 +152,6 @@ backend.on('connection', socket => {
             backend.to(room).emit('trackShape', trackShape[room]);
             backend.to(room).emit('trackSound', trackSound[room]);
             backend.to(room).emit('trackPitch', trackPitch[room]);
-
-
             backend.emit('rooms', rooms); // send everyone the rooms
         }
     })
