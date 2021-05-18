@@ -160,13 +160,14 @@ backend.on('connection', socket => {
 
     // When a user disconnects update the number of users
     socket.on('disconnect', (user) => {
-        console.log(socket.id, 'left')
-        let room = getRoom(socket.id)
-        socket.leave(room)
-        delete users[socket.id]
+        console.log(socket.id, 'left');
+        let room = getRoom(socket.id);
+        socket.leave(room);
+        delete users[socket.id];
         if (room !== undefined) {
             rooms[room].numUsers -= 1
-        }
+            backend.to(room).emit('numUsers', rooms[room].numUsers);
+        };
         backend.emit('rooms', rooms); // send everyone the rooms
     });
 
