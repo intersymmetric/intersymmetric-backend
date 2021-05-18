@@ -347,5 +347,9 @@ backend.on('connection', socket => {
         socket.to(room).emit('trackSound', data);
     })
 
-
+    socket.on('velocityPattern', data => {
+        let room = getRoom(socket.id);
+        velocityPattern[room] = data;
+        socket.to(room).emit('velocityPattern', data);
+    })
 })
