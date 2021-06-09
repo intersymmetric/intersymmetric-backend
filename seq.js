@@ -12,8 +12,8 @@ let server;
 if (env == 'live') {
     // Cert for SSL
     // This is called in production to make a live server
-    let privateKey = fs.readFileSync('ssl-cert/privkey.pem', 'utf8');
-    let certificate = fs.readFileSync('ssl-cert/fullchain.pem', 'utf8');
+    let privateKey = fs.readFileSync('/etc/letsencrypt/live/interbackend.xyz/privkey.pem', 'utf8');
+    let certificate = fs.readFileSync('/etc/letsencrypt/live/interbackend.xyz/fullchain.pem', 'utf8');
     let credentials = {key : privateKey, cert: certificate}
     server = https.createServer(credentials).listen(port);
     console.log('Booting SSL/HTTPS Server')
@@ -31,6 +31,7 @@ let backend = io(server, {
 		}
 	}
 );
+console.log('Created backend')
 
 const numInstruments = 6;
 const numSteps = 16;
