@@ -131,7 +131,7 @@ backend.on('connection', socket => {
                 trackPitch[room] = new Array(6).fill(0.0);
                 trackSound[room] = new Array(6).fill(0.5);
                 trackShape[room] = new Array(6).fill(1.0);
-                velocityPattern[room] = 1;
+                velocityPattern[room] = 0;
             }
             
             // Update this socket with the new data
