@@ -58,11 +58,12 @@ let maxCells = {};
 let prevInsertions = {};
 let mirrorPoint = {};
 
-// Rewire stuff
+// Sample Stuff
 let sampleSelectors = {};
 let trackGains = {};
 let trackRates = {};
 let trackLengths = {};
+let playbackRate = {};
 
 // No Bounds stuff
 let trackPitch = {};
@@ -124,13 +125,14 @@ backend.on('connection', socket => {
                 };
                 maxCells[room] = 32,
                 prevInsertions[room] = [];
-                sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => Math.round(Math.random() * 30))
+                sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => 0);
                 trackGains[room] = new Array(6).fill(1.0);
                 trackRates[room] = new Array(6).fill(1.0);
                 trackLengths[room] = new Array(6).fill(3.0);
                 trackPitch[room] = new Array(6).fill(0.0);
                 trackSound[room] = new Array(6).fill(0.5);
-                trackShape[room] = new Array(6).fill(1.0);
+                trackShape[room] = new Array(6).fill(5.0);
+                playbackRate[room] = 1.0;
                 velocityPattern[room] = 0;
             }
             
@@ -157,6 +159,7 @@ backend.on('connection', socket => {
             backend.to(room).emit('trackSound', trackSound[room]);
             backend.to(room).emit('trackPitch', trackPitch[room]);
             backend.to(room).emit('velocityPattern', velocityPattern[room]);
+            backend.to(room).emit('playbackRate', playbackRate[room])
 
             backend.emit('rooms', rooms); // send everyone the rooms
         }
@@ -348,6 +351,12 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         trackSound[room] = data;
         socket.to(room).emit('trackSound', data);
+    })
+
+    socket.on('playbackRate', data => {
+        let room = getRoom(socket.id);
+        playbackRate[room] = data;
+        socket.to(room).emit('playbackRate', data);
     })
 
     socket.on('velocityPattern', data => {
