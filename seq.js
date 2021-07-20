@@ -57,6 +57,7 @@ let pitchOffset = {};
 let maxCells = {};
 let prevInsertions = {};
 let mirrorPoint = {};
+let userMessage = {};
 
 // Sample Stuff
 let sampleSelectors = {};
@@ -134,6 +135,7 @@ backend.on('connection', socket => {
                 trackShape[room] = new Array(6).fill(5.0);
                 playbackRate[room] = 1.0;
                 velocityPattern[room] = 0;
+                userMessage[room] = '';
             }
             
             // Update this socket with the new data
@@ -160,7 +162,7 @@ backend.on('connection', socket => {
             backend.to(room).emit('trackPitch', trackPitch[room]);
             backend.to(room).emit('velocityPattern', velocityPattern[room]);
             backend.to(room).emit('playbackRate', playbackRate[room])
-
+            backend.to(room).emit('userMessage', userMessage[room]);
             backend.emit('rooms', rooms); // send everyone the rooms
         }
     })
@@ -345,23 +347,29 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         trackShape[room] = data;
         socket.to(room).emit('trackShape', data);
-    })
+    });
 
     socket.on('trackSound', data => {
         let room = getRoom(socket.id);
         trackSound[room] = data;
         socket.to(room).emit('trackSound', data);
-    })
+    });
 
     socket.on('playbackRate', data => {
         let room = getRoom(socket.id);
         playbackRate[room] = data;
         socket.to(room).emit('playbackRate', data);
-    })
+    });
 
     socket.on('velocityPattern', data => {
         let room = getRoom(socket.id);
         velocityPattern[room] = data;
         socket.to(room).emit('velocityPattern', data);
-    })
+    });
+
+    socket.on('userMessage', data => {
+        let room = getRoom(socket.id);
+        userMessage[room] = data;
+        socket.to(room).emit('userMessage', data);
+    });
 })
