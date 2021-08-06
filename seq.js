@@ -3,10 +3,13 @@ const http = require('http');
 const https = require('https');
 const io = require('socket.io');
 let parameters = require('./parameters.js')
+// DB
+const PouchDB = require('pouchdb');
+let database = require('./db.js')
+let db = new PouchDB('intersymmetric');
 
 const port = 4300;
 const env = process.argv[2];
-
 let server;
 
 if (env == 'live') {
@@ -23,119 +26,158 @@ if (env == 'live') {
     server = http.createServer().listen(port);
     console.log('Booting HTTP Server')
 };
-
-let backend = io(server, {
-		cors: {
-			origin: '*',
-			methods: ['GET', 'POST']
-		}
-	}
-);
+const serverOpts = {cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+}}
+let backend = io(server, serverOpts);
 console.log('Created backend')
 
 const numInstruments = 6;
 const numSteps = 16;
 
 let blankGrid = new Array(numInstruments)
-    .fill(
-        new Array(numSteps)
-            .fill(false)
-    );
+.fill(
+    new Array(numSteps)
+    .fill(false)
+);
 
-let grid = {}
-let params = {}
-let clock = {}
-let bpm = {};
-let play = {}
-let euclid = {};
-let velocity = {};
-let length = {};
-let rooms = {};
-let users = {};
-let enabledStates = {};
-let pitchOffset = {};
-let maxCells = {};
-let prevInsertions = {};
-let mirrorPoint = {};
-let userMessage = {};
+let app = {
+    users : [],
+    rooms : [],
+    grid : {},
+    params : {},
+    clock : {},
+    bpm : {},
+    play : {},
+    euclid : {},
+    length : {},
+    enabledStates : {},
+    pitchOffset : {},
+    maxCells : {},
+    prevInsertions : {},
+    mirrorPoint : {},
+    userMessage : {},
+    sampleSelectors : {},
+    trackGains : {},
+    trackRates : {},
+    trackLengths : {},
+    playbackRate : {},
+    trackPitch : {},
+    trackSound : {},
+    trackShape : {},
+    velocityPattern : {}
+}
+// let grid = {}
+// let params = {}
+// let clock = {}
+// let bpm = {};
+// let play = {}
+// let euclid = {};
+// let length = {};
+// let rooms = {};
+// let users = {};
+// let enabledStates = {};
+// let pitchOffset = {};
+// let maxCells = {};
+// let prevInsertions = {};
+// let mirrorPoint = {};
+// let userMessage = {};
 
-// Sample Stuff
-let sampleSelectors = {};
-let trackGains = {};
-let trackRates = {};
-let trackLengths = {};
-let playbackRate = {};
+// // Sample Stuff
+// let sampleSelectors = {};
+// let trackGains = {};
+// let trackRates = {};
+// let trackLengths = {};
+// let playbackRate = {};
 
-// No Bounds stuff
-let trackPitch = {};
-let trackSound = {};
-let trackShape = {};
-let velocityPattern = {};
+// // No Bounds stuff
+// let trackPitch = {};
+// let trackSound = {};
+// let trackShape = {};
+// let velocityPattern = {};
+
+db.allDocs({include_docs: true, attachments: true})
+.then(d => {
+    d.rows.forEach(p => {
+        for (const [k,v] of Object.entries(p.doc)) {
+            if (k === '_id') {
+                app.rooms.push(v);
+            }
+            if (!['_rev','_id'].includes(k)) {
+                const room = p.doc['_id'];
+                app[k][room] = v;
+            }
+        }
+    })
+});
+
+console.log(app.rooms)
 
 const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
-    console.log(socket.id, 'connected');
     backend.emit('rooms', rooms); // send everyone the rooms
+
     socket.on('roomJoin', room => {
-        console.log(socket.id.slice(0, 5), 'created '+ room)
-        if (users[socket.id] !== room) { // Check if user is already in a room
+        
+        if (app.users[socket.id] !== room) { // Check if user is already in a room
             if (socket.id in users) {
                 let prevRoom = getRoom(socket.id)
-                socket.leave(prevRoom)
-                rooms[prevRoom].numUsers -= 1
-            }
-            socket.join(room)
-            users[socket.id] = room // Now log their room in the users database
+                socket.leave(prevRoom);
+                rooms[prevRoom].numUsers -= 1;
+            };
+            socket.join(room);
+            users[socket.id] = room; // Now log their room in the users database
     
             // Does this room already exist?
             if (rooms.hasOwnProperty(room)) {
                 rooms[room].numUsers += 1
-            } else { // No
-                rooms[room] = {numUsers : 1};
-                grid[room] = blankGrid.map(row => row.map(cell => false));
-                params[room] = JSON.parse(JSON.stringify(parameters.base));
-                mirrorPoint[room] = 8;
-                pitchOffset[room] = 0;
-                bpm[room] = 120;
-                play[room] = false;
-                euclid[room] = [0, 0, 0, 0, 0, 0];
-                clock[room] = {
-                    mode : 'forward', 
-                    multiplier: 0, 
-                    offset : {
-                        start : 1,
-                        end : 16
-                    }
-                };
-                velocity[room] = 1.0;
-                length[room] = 1.0;
-                enabledStates[room] = {
-                    maxCells: true,
-                    pitchOffset: true,
-                    mirrorPoint: true,
-                    grid: true,
-                    bpm: true,
-                    euclid: true,
-                    offset: true,
-                    globalVelocity: true,
-                    globalLength: true,
-                    multiplier: true,
-                    transforms: true,
-                    velocityPattern: true,
-                };
-                maxCells[room] = 32,
-                prevInsertions[room] = [];
-                sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => 0);
-                trackGains[room] = new Array(6).fill(1.0);
-                trackRates[room] = new Array(6).fill(1.0);
-                trackLengths[room] = new Array(6).fill(3.0);
-                trackPitch[room] = new Array(6).fill(0.0);
-                trackSound[room] = new Array(6).fill(0.5);
-                trackShape[room] = new Array(6).fill(1.0);
-                playbackRate[room] = 1.0;
-                velocityPattern[room] = 0;
-                userMessage[room] = '';
+            } else { 
+                // No, create a room with defaults
+                // rooms[room] = {numUsers : 1};
+                // grid[room] = blankGrid.map(row => row.map(cell => false));
+                // params[room] = JSON.parse(JSON.stringify(parameters.base));
+                // mirrorPoint[room] = 8;
+                // pitchOffset[room] = 0;
+                // bpm[room] = 120;
+                // play[room] = false;
+                // euclid[room] = [0, 0, 0, 0, 0, 0];
+                // clock[room] = {
+                //     mode : 'forward', 
+                //     multiplier: 0, 
+                //     offset : {
+                //         start : 1,
+                //         end : 16
+                //     }
+                // };
+                // length[room] = 1.0;
+                // enabledStates[room] = {
+                //     maxCells: true,
+                //     pitchOffset: true,
+                //     mirrorPoint: true,
+                //     grid: true,
+                //     bpm: true,
+                //     euclid: true,
+                //     offset: true,
+                //     globalVelocity: true,
+                //     globalLength: true,
+                //     multiplier: true,
+                //     transforms: true,
+                //     velocityPattern: true,
+                // };
+                // maxCells[room] = 32,
+                // prevInsertions[room] = [];
+                // sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => 0);
+                // trackGains[room] = new Array(6).fill(1.0);
+                // trackRates[room] = new Array(6).fill(1.0);
+                // trackLengths[room] = new Array(6).fill(3.0);
+                // trackPitch[room] = new Array(6).fill(0.0);
+                // trackSound[room] = new Array(6).fill(0.5);
+                // trackShape[room] = new Array(6).fill(1.0);
+                // playbackRate[room] = 1.0;
+                // velocityPattern[room] = 0;
+                // userMessage[room] = '';
             }
             
             // Update this socket with the new data
@@ -224,6 +266,7 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id)
         bpm[room] = data;
         socket.to(room).emit('bpm', data);
+        database.setProp(db, room, 'bpm', data)
     });
     socket.on('grid', data => {
         let room = getRoom(socket.id)
