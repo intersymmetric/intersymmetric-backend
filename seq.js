@@ -2,11 +2,10 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const io = require('socket.io');
-let parameters = require('./parameters.js')
 // DB
 const PouchDB = require('pouchdb');
 let database = require('./db.js')
-let db = new PouchDB('intersymmetric');
+let db = new PouchDB('db', {revs_limit: 0, auto_compaction: true});
 
 const port = 4300;
 const env = process.argv[2];
@@ -31,388 +30,298 @@ const serverOpts = {cors: {
     methods: ['GET', 'POST']
 }}
 let backend = io(server, serverOpts);
-console.log('Created backend')
 
-const numInstruments = 6;
-const numSteps = 16;
+async function getRoom() {
 
-let blankGrid = new Array(numInstruments)
-.fill(
-    new Array(numSteps)
-    .fill(false)
-);
-
-let app = {
-    users : [],
-    rooms : [],
-    grid : {},
-    params : {},
-    clock : {},
-    bpm : {},
-    play : {},
-    euclid : {},
-    length : {},
-    enabledStates : {},
-    pitchOffset : {},
-    maxCells : {},
-    prevInsertions : {},
-    mirrorPoint : {},
-    userMessage : {},
-    sampleSelectors : {},
-    trackGains : {},
-    trackRates : {},
-    trackLengths : {},
-    playbackRate : {},
-    trackPitch : {},
-    trackSound : {},
-    trackShape : {},
-    velocityPattern : {}
 }
-// let grid = {}
-// let params = {}
-// let clock = {}
-// let bpm = {};
-// let play = {}
-// let euclid = {};
-// let length = {};
-// let rooms = {};
-// let users = {};
-// let enabledStates = {};
-// let pitchOffset = {};
-// let maxCells = {};
-// let prevInsertions = {};
-// let mirrorPoint = {};
-// let userMessage = {};
 
-// // Sample Stuff
-// let sampleSelectors = {};
-// let trackGains = {};
-// let trackRates = {};
-// let trackLengths = {};
-// let playbackRate = {};
+users = {}
+rooms = {}
 
-// // No Bounds stuff
-// let trackPitch = {};
-// let trackSound = {};
-// let trackShape = {};
-// let velocityPattern = {};
-
-db.allDocs({include_docs: true, attachments: true})
-.then(d => {
-    d.rows.forEach(p => {
-        for (const [k,v] of Object.entries(p.doc)) {
-            if (k === '_id') {
-                app.rooms.push(v);
-            }
-            if (!['_rev','_id'].includes(k)) {
-                const room = p.doc['_id'];
-                app[k][room] = v;
-            }
-        }
-    })
-});
-
-console.log(app.rooms)
-
-const getRoom = id => users[id] // get room that user belongs to
-
+// process.exit()
 backend.on('connection', socket => {
-    backend.emit('rooms', rooms); // send everyone the rooms
-
-    socket.on('roomJoin', room => {
-        
-        if (app.users[socket.id] !== room) { // Check if user is already in a room
-            if (socket.id in users) {
-                let prevRoom = getRoom(socket.id)
-                socket.leave(prevRoom);
-                rooms[prevRoom].numUsers -= 1;
-            };
-            socket.join(room);
-            users[socket.id] = room; // Now log their room in the users database
-    
-            // Does this room already exist?
-            if (rooms.hasOwnProperty(room)) {
-                rooms[room].numUsers += 1
-            } else { 
-                // No, create a room with defaults
-                // rooms[room] = {numUsers : 1};
-                // grid[room] = blankGrid.map(row => row.map(cell => false));
-                // params[room] = JSON.parse(JSON.stringify(parameters.base));
-                // mirrorPoint[room] = 8;
-                // pitchOffset[room] = 0;
-                // bpm[room] = 120;
-                // play[room] = false;
-                // euclid[room] = [0, 0, 0, 0, 0, 0];
-                // clock[room] = {
-                //     mode : 'forward', 
-                //     multiplier: 0, 
-                //     offset : {
-                //         start : 1,
-                //         end : 16
-                //     }
-                // };
-                // length[room] = 1.0;
-                // enabledStates[room] = {
-                //     maxCells: true,
-                //     pitchOffset: true,
-                //     mirrorPoint: true,
-                //     grid: true,
-                //     bpm: true,
-                //     euclid: true,
-                //     offset: true,
-                //     globalVelocity: true,
-                //     globalLength: true,
-                //     multiplier: true,
-                //     transforms: true,
-                //     velocityPattern: true,
-                // };
-                // maxCells[room] = 32,
-                // prevInsertions[room] = [];
-                // sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => 0);
-                // trackGains[room] = new Array(6).fill(1.0);
-                // trackRates[room] = new Array(6).fill(1.0);
-                // trackLengths[room] = new Array(6).fill(3.0);
-                // trackPitch[room] = new Array(6).fill(0.0);
-                // trackSound[room] = new Array(6).fill(0.5);
-                // trackShape[room] = new Array(6).fill(1.0);
-                // playbackRate[room] = 1.0;
-                // velocityPattern[room] = 0;
-                // userMessage[room] = '';
-            }
-            
-            // Update this socket with the new data
-            backend.to(room).emit('bpm', bpm[room]);
-            backend.to(room).emit('play', play[room]);
-            backend.to(room).emit('grid', grid[room]);
-            backend.to(room).emit('clock::mode', clock[room].mode);
-            backend.to(room).emit('clock::multiplier', clock[room].multiplier);
-            backend.to(room).emit('clock::offset', clock[room].offset);
-            backend.to(room).emit('params', params[room]);
-            backend.to(room).emit('numUsers', rooms[room].numUsers);
-            backend.to(room).emit('euclid', euclid[room]);
-            backend.to(room).emit('velocity', velocity[room]);
-            backend.to(room).emit('length', length[room]);
-            backend.to(room).emit('enabledStates', enabledStates[room]);
-            backend.to(room).emit('maxCells', maxCells[room]);
-            backend.to(room).emit('prevInsertions', prevInsertions[room]);
-            backend.to(room).emit('pitchOffset', pitchOffset[room]);
-            backend.to(room).emit('sampleSelectors', sampleSelectors[room]);
-            backend.to(room).emit('trackGains', trackGains[room]);
-            backend.to(room).emit('trackRates', trackRates[room]);
-            backend.to(room).emit('trackShape', trackShape[room]);
-            backend.to(room).emit('trackSound', trackSound[room]);
-            backend.to(room).emit('trackPitch', trackPitch[room]);
-            backend.to(room).emit('velocityPattern', velocityPattern[room]);
-            backend.to(room).emit('playbackRate', playbackRate[room])
-            backend.to(room).emit('userMessage', userMessage[room]);
-            backend.emit('rooms', rooms); // send everyone the rooms
+    socket.on('roomJoin', async room => {
+        // db.allDocs({include_docs: true, attachments: true})
+        // .then(d => {
+        //     d.rows.forEach(p => {
+        //         let doc = p.doc
+        //     })
+        // })
+        if (users[socket.id] !== room && users[socket.id] !== undefined) {
+            socket.leave(users[socket.id]);
         }
+        users[socket.id] = room
+        socket.join(room)
+
+
+        let r; // r is a room
+        // try {
+        //     r = await db.get(room)
+        // } catch (err) {
+        //     r = database.createNewRoom(room)
+        //     await db.put(r)
+        // }
+
+        db.get(room).then(doc => {
+            r = doc;
+        }).catch(err => {
+            if (err.reason === 'missing') {
+                r = database.createNewRoom(room)
+                return db.put(r)
+            }
+        }).then(() => {
+            // Update this socket with the n ew data
+            backend.to(room).emit('bpm', r.bpm);
+            backend.to(room).emit('play', r.play); 
+            backend.to(room).emit('grid', r.grid);
+            backend.to(room).emit('clock::mode', r.clock.mode);
+            backend.to(room).emit('clock::multiplier', r.clock.multiplier);
+            backend.to(room).emit('clock::offset', r.clock.offset);
+            backend.to(room).emit('params', r.params);
+            backend.to(room).emit('numUsers', r.numUsers);
+            backend.to(room).emit('euclid', r.euclid);
+            backend.to(room).emit('length', r.length);
+            backend.to(room).emit('enabledStates', r.enabledStates);
+            backend.to(room).emit('maxCells', r.maxCells);
+            backend.to(room).emit('prevInsertions', r.prevInsertions);
+            backend.to(room).emit('pitchOffset', r.pitchOffset);
+            backend.to(room).emit('sampleSelectors', r.sampleSelectors);
+            backend.to(room).emit('trackGains', r.trackGains);
+            backend.to(room).emit('trackRates', r.trackRates);
+            backend.to(room).emit('trackShape', r.trackShape);
+            backend.to(room).emit('trackSound', r.trackSound);
+            backend.to(room).emit('trackPitch', r.trackPitch);
+            backend.to(room).emit('velocityPattern', r.velocityPattern);
+            backend.to(room).emit('playbackRate', r.playbackRate)
+            backend.to(room).emit('userMessage', r.userMessage);
+        })
     })
 
     // When a user disconnects update the number of users
-    socket.on('disconnect', (user) => {
+    socket.on('disconnect', user => {
         console.log(socket.id, 'left');
-        let room = getRoom(socket.id);
-        socket.leave(room);
+        socket.leave(users[socket.id]);
         delete users[socket.id];
-        if (room !== undefined) {
-            rooms[room].numUsers -= 1
-            backend.to(room).emit('numUsers', rooms[room].numUsers);
-        };
-        backend.emit('rooms', rooms); // send everyone the rooms
+        // if (room !== undefined) {
+        //     rooms[room].numUsers -= 1
+        //     backend.to(room).emit('numUsers', rooms[room].numUsers);
+        // };
+        // backend.emit('rooms', rooms); // send everyone the rooms
     });
 
     // KICK
     socket.on('params::kick', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].kick[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::kick::'+parameter, data)
+
+        db.get(room).then(doc => {
+            doc.params.kick[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
     })
 
     // METAL 1
     socket.on('params::metal1', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].metal1[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::metal1::'+parameter, data)
+
+        db.get(room).then(doc => {
+            doc.params.metal1[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
     })
 
-    // METAL 2
     socket.on('params::metal2', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].metal2[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::metal2::'+parameter, data)
-    })
 
-    // SNARE
+        db.get(room).then(doc => {
+            doc.params.metal2[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
+    });
+
     socket.on('params::snare', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].snare[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::snare::'+parameter, data)
-    })
+
+        db.get(room).then(doc => {
+            doc.params.snare[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
+    });
 
     socket.on('params::fm1', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].fm1[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::fm1::'+parameter, data)
-    })
+
+        db.get(room).then(doc => {
+            doc.params.fm1[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
+    });
 
     socket.on('params::fm2', (parameter, data) => {
-        let room = getRoom(socket.id)
-        params[room].fm2[parameter] = data
+        let room = users[socket.id];
         socket.to(room).emit('params::fm2::'+parameter, data)
-    })
 
-    socket.on('bpm', (data) => {
-        let room = getRoom(socket.id)
-        bpm[room] = data;
+        db.get(room).then(doc => {
+            doc.params.fm1[parameter] = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
+    });
+
+    socket.on('bpm', data => {
+        let room = users[socket.id];
         socket.to(room).emit('bpm', data);
-        database.setProp(db, room, 'bpm', data)
-    });
-    socket.on('grid', data => {
-        let room = getRoom(socket.id)
-        if (data !== null) {
-            if (data.length === 6) {
-                grid[room] = data;
-                socket.to(room).emit('grid', data);
-            }
-        }
-    });
-    socket.on('play', (data) => {
-        let room = getRoom(socket.id)
-        play[room] = data
-        socket.to(room).emit('play', data);
+
+        db.get(room).then(doc => {
+            doc.bpm = data;
+            return db.put(doc)
+        }).catch(err => console.log(err))
     });
 
-    socket.on('clock::mode', (data) => {
-        let room = getRoom(socket.id)
-        clock[room].mode = data;
-        socket.to(room).emit('clock::mode', data);
+    socket.on('grid', data => {
+        let room = users[socket.id];
+        if (data !== null && data.length === 6) {
+            db.get(room).then(doc => {
+                doc.grid = data;
+                return db.put(doc)
+            }).catch(err => console.log(err))
+        } 
+        socket.to(room).emit('grid', data);
     }); 
 
-    socket.on('clock::multiplier', data => {
-        let room = getRoom(socket.id);
-        clock[room].multiplier = data;
-        socket.to(room).emit('clock::multiplier', data);
-    })
+    // socket.on('play', (data) => {
+    //     let room = getRoom(socket.id)
+    //     play[room] = data
+    //     socket.to(room).emit('play', data);
+    // });
 
-    socket.on('clock::offset', data => {
-        let room = getRoom(socket.id);
-        clock[room].offset = data;
-        socket.to(room).emit('clock::offset', data);
-    })
+    // socket.on('clock::mode', (data) => {
+    //     let room = getRoom(socket.id)
+    //     clock[room].mode = data;
+    //     socket.to(room).emit('clock::mode', data);
+    // }); 
 
-    socket.on('euclid', data => {
-        let room = getRoom(socket.id)
-        euclid[room] = data;
-        socket.to(room).emit('euclid', data)
-    })
+    // socket.on('clock::multiplier', data => {
+    //     let room = getRoom(socket.id);
+    //     clock[room].multiplier = data;
+    //     socket.to(room).emit('clock::multiplier', data);
+    // })
 
-    socket.on('velocity', data => {
-        let room = getRoom(socket.id);
-        velocity[room] = data;
-        socket.to(room).emit('velocity', data);
-    })
+    // socket.on('clock::offset', data => {
+    //     let room = getRoom(socket.id);
+    //     clock[room].offset = data;
+    //     socket.to(room).emit('clock::offset', data);
+    // })
 
-    socket.on('length', data => {
-        let room = getRoom(socket.id);
-        length[room] = data;
-        socket.to(room).emit('length', data);
-    })
+    // socket.on('euclid', data => {
+    //     let room = getRoom(socket.id)
+    //     euclid[room] = data;
+    //     socket.to(room).emit('euclid', data)
+    // })
 
-    // ADMIN CONTROLS
-    socket.on('enabledStates', states => {
-        let room = getRoom(socket.id);
-        enabledStates[room] = states;
-        socket.to(room).emit('enabledStates', states)
-    })
+    // socket.on('length', data => {
+    //     let room = getRoom(socket.id);
+    //     length[room] = data;
+    //     socket.to(room).emit('length', data);
+    // })
 
-    socket.on('velocityList', (id, data) => {
-        let room = getRoom(socket.id);
-        socket.to(room).emit('velocityList', id, data);
-    })
+    // // ADMIN CONTROLS
+    // socket.on('enabledStates', states => {
+    //     let room = getRoom(socket.id);
+    //     enabledStates[room] = states;
+    //     socket.to(room).emit('enabledStates', states)
+    // })
 
-    socket.on('maxCells', data => {
-        let room = getRoom(socket.id);
-        maxCells[room] = data;
-        socket.to(room).emit('maxCells', data);
-    })
+    // socket.on('velocityList', (id, data) => {
+    //     let room = getRoom(socket.id);
+    //     socket.to(room).emit('velocityList', id, data);
+    // })
 
-    socket.on('prevInsertions', data => {
-        let room = getRoom(socket.id);
-        prevInsertions[room] = data;
-        socket.to(room).emit('prevInsertions', data);
-    })
+    // socket.on('maxCells', data => {
+    //     let room = getRoom(socket.id);
+    //     maxCells[room] = data;
+    //     socket.to(room).emit('maxCells', data);
+    // })
 
-    socket.on('mirrorPoint', data => {
-        let room = getRoom(socket.id);
-        mirrorPoint[room] = data;
-        socket.to(room).emit('mirrorPoint', data);
-    })
+    // socket.on('prevInsertions', data => {
+    //     let room = getRoom(socket.id);
+    //     prevInsertions[room] = data;
+    //     socket.to(room).emit('prevInsertions', data);
+    // })
 
-    socket.on('pitchOffset', data => {
-        let room = getRoom(socket.id);
-        pitchOffset[room] = data;
-        socket.to(room).emit('pitchOffset', data)
-    })
+    // socket.on('mirrorPoint', data => {
+    //     let room = getRoom(socket.id);
+    //     mirrorPoint[room] = data;
+    //     socket.to(room).emit('mirrorPoint', data);
+    // })
 
-    socket.on('sampleSelectors', data => {
-        let room = getRoom(socket.id);
-        sampleSelectors[room] = data;
-        socket.to(room).emit('sampleSelectors', data);
-    })
+    // socket.on('pitchOffset', data => {
+    //     let room = getRoom(socket.id);
+    //     pitchOffset[room] = data;
+    //     socket.to(room).emit('pitchOffset', data)
+    // })
 
-    socket.on('trackGains', data => {
-        let room = getRoom(socket.id);
-        trackGains[room] = data;
-        socket.to(room).emit('trackGains', data);
-    })
+    // socket.on('sampleSelectors', data => {
+    //     let room = getRoom(socket.id);
+    //     sampleSelectors[room] = data;
+    //     socket.to(room).emit('sampleSelectors', data);
+    // })
 
-    socket.on('trackRates', data => {
-        let room = getRoom(socket.id);
-        trackRates[room] = data;
-        socket.to(room).emit('trackRates', data);
-    })
+    // socket.on('trackGains', data => {
+    //     let room = getRoom(socket.id);
+    //     trackGains[room] = data;
+    //     socket.to(room).emit('trackGains', data);
+    // })
 
-    socket.on('trackLengths', data => {
-        let room = getRoom(socket.id);
-        trackLengths[room] = data;
-        socket.to(room).emit('trackLengths', data);
-    })
+    // socket.on('trackRates', data => {
+    //     let room = getRoom(socket.id);
+    //     trackRates[room] = data;
+    //     socket.to(room).emit('trackRates', data);
+    // })
 
-    // No Bounds Meta Data
-    socket.on('trackPitch', data => {
-        let room = getRoom(socket.id);
-        trackPitch[room] = data;
-        socket.to(room).emit('trackPitch', data);
-    })
+    // socket.on('trackLengths', data => {
+    //     let room = getRoom(socket.id);
+    //     trackLengths[room] = data;
+    //     socket.to(room).emit('trackLengths', data);
+    // })
 
-    socket.on('trackShape', data => {
-        let room = getRoom(socket.id);
-        trackShape[room] = data;
-        socket.to(room).emit('trackShape', data);
-    });
+    // // No Bounds Meta Data
+    // socket.on('trackPitch', data => {
+    //     let room = getRoom(socket.id);
+    //     trackPitch[room] = data;
+    //     socket.to(room).emit('trackPitch', data);
+    // })
 
-    socket.on('trackSound', data => {
-        let room = getRoom(socket.id);
-        trackSound[room] = data;
-        socket.to(room).emit('trackSound', data);
-    });
+    // socket.on('trackShape', data => {
+    //     let room = getRoom(socket.id);
+    //     trackShape[room] = data;
+    //     socket.to(room).emit('trackShape', data);
+    // });
 
-    socket.on('playbackRate', data => {
-        let room = getRoom(socket.id);
-        playbackRate[room] = data;
-        socket.to(room).emit('playbackRate', data);
-    });
+    // socket.on('trackSound', data => {
+    //     let room = getRoom(socket.id);
+    //     trackSound[room] = data;
+    //     socket.to(room).emit('trackSound', data);
+    // });
 
-    socket.on('velocityPattern', data => {
-        let room = getRoom(socket.id);
-        velocityPattern[room] = data;
-        socket.to(room).emit('velocityPattern', data);
-    });
+    // socket.on('playbackRate', data => {
+    //     let room = getRoom(socket.id);
+    //     playbackRate[room] = data;
+    //     socket.to(room).emit('playbackRate', data);
+    // });
 
-    socket.on('userMessage', data => {
-        let room = getRoom(socket.id);
-        userMessage[room] = data;
-        socket.to(room).emit('userMessage', data);
-    });
+    // socket.on('velocityPattern', data => {
+    //     let room = getRoom(socket.id);
+    //     velocityPattern[room] = data;
+    //     socket.to(room).emit('velocityPattern', data);
+    // });
+
+    // socket.on('userMessage', data => {
+    //     let room = getRoom(socket.id);
+    //     userMessage[room] = data;
+    //     socket.to(room).emit('userMessage', data);
+    // });
 })
