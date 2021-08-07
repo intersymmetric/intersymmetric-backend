@@ -4,7 +4,7 @@ const https = require('https');
 const io = require('socket.io');
 // DB
 const PouchDB = require('pouchdb');
-let database = require('./db.js')
+let helper = require('./helper.js')
 let db = new PouchDB('db', {revs_limit: 0, auto_compaction: true});
 
 const port = 4300;
@@ -41,12 +41,7 @@ rooms = {}
 // process.exit()
 backend.on('connection', socket => {
     socket.on('roomJoin', async room => {
-        // db.allDocs({include_docs: true, attachments: true})
-        // .then(d => {
-        //     d.rows.forEach(p => {
-        //         let doc = p.doc
-        //     })
-        // })
+
         if (users[socket.id] !== room && users[socket.id] !== undefined) {
             socket.leave(users[socket.id]);
         }
@@ -55,18 +50,11 @@ backend.on('connection', socket => {
 
 
         let r; // r is a room
-        // try {
-        //     r = await db.get(room)
-        // } catch (err) {
-        //     r = database.createNewRoom(room)
-        //     await db.put(r)
-        // }
-
         db.get(room).then(doc => {
             r = doc;
         }).catch(err => {
             if (err.reason === 'missing') {
-                r = database.createNewRoom(room)
+                r = helper.createNewRoom(room)
                 return db.put(r)
             }
         }).then(() => {
