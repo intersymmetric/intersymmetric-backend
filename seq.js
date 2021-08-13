@@ -44,7 +44,9 @@ let blankGrid = new Array(numInstruments)
 
 let grid = {}
 let params = {}
-let clock = {}
+let clockMode = {};
+let clockMultiplier = {};
+let clockOffset = {};
 let bpm = {};
 let play = {}
 let euclid = {};
@@ -75,7 +77,6 @@ let velocityPattern = {};
 const getRoom = id => users[id] // get room that user belongs to
 
 backend.on('connection', socket => {
-    console.log(socket.id, 'connected');
     backend.emit('rooms', rooms); // send everyone the rooms
     socket.on('roomJoin', room => {
         console.log(socket.id.slice(0, 5), 'created '+ room)
@@ -100,13 +101,11 @@ backend.on('connection', socket => {
                 bpm[room] = 120;
                 play[room] = false;
                 euclid[room] = [0, 0, 0, 0, 0, 0];
-                clock[room] = {
-                    mode : 'forward', 
-                    multiplier: 0, 
-                    offset : {
-                        start : 1,
-                        end : 16
-                    }
+                clockMode[room] = 'forward';
+                clockMultiplier[room] = 0;
+                clockOffset = {
+                	start: 1,
+                	end: 16
                 };
                 velocity[room] = 1.0;
                 length[room] = 1.0;
@@ -142,9 +141,9 @@ backend.on('connection', socket => {
             backend.to(room).emit('bpm', bpm[room]);
             backend.to(room).emit('play', play[room]);
             backend.to(room).emit('grid', grid[room]);
-            backend.to(room).emit('clock::mode', clock[room].mode);
-            backend.to(room).emit('clock::multiplier', clock[room].multiplier);
-            backend.to(room).emit('clock::offset', clock[room].offset);
+            backend.to(room).emit('clock::mode', clockMode[room]);
+            backend.to(room).emit('clock::multiplier', clockMultiplier[room]);
+            backend.to(room).emit('clock::offset', clockOffset[room]);
             backend.to(room).emit('params', params[room]);
             backend.to(room).emit('numUsers', rooms[room].numUsers);
             backend.to(room).emit('euclid', euclid[room]);
@@ -242,19 +241,19 @@ backend.on('connection', socket => {
 
     socket.on('clock::mode', (data) => {
         let room = getRoom(socket.id)
-        clock[room].mode = data;
+        clockMode[room] = data;
         socket.to(room).emit('clock::mode', data);
     }); 
 
     socket.on('clock::multiplier', data => {
         let room = getRoom(socket.id);
-        clock[room].multiplier = data;
+        clockMultiplier[room] = data;
         socket.to(room).emit('clock::multiplier', data);
     })
 
     socket.on('clock::offset', data => {
         let room = getRoom(socket.id);
-        clock[room].offset = data;
+        clockOffset[room] = data;
         socket.to(room).emit('clock::offset', data);
     })
 
