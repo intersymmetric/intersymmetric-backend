@@ -103,7 +103,7 @@ backend.on('connection', socket => {
                 euclid[room] = [0, 0, 0, 0, 0, 0];
                 clockMode[room] = 'forward';
                 clockMultiplier[room] = 0;
-                clockOffset = {
+                clockOffset[room] = {
                 	start: 1,
                 	end: 16
                 };
