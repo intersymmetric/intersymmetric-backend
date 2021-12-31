@@ -4,17 +4,19 @@ This is the backend websocket server that manages rooms, parameters, users and a
 
 ## Running the server
 
-> :warning: The following is tested on Node 16+.
+> :warning: The following is tested to work on Node 16+.
 
-1. Install dependencies
+
+### 1. Install dependencies
 
 `pnpm/npm/yarn install`
 
+### 2. Start the server
 
-2a. Local development server
+For local testing / prototyping:
 
 `node seq.js`
 
-2b. Production server
+For production:
 
 `node seq.js live`
