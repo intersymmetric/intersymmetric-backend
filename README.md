@@ -8,10 +8,12 @@ First install dependencies:
 
 `pnpm/npm/yarn install`
 
-Then, to run a local development server:
+The following is tested on Node 16+.
+
+Local development server:
 
 `node seq.js`
 
-and to run a production server:
+Production server:
 
 `node seq.js live`
