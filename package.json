@@ -1,7 +1,15 @@
 {
+  "scripts" : {
+    "test" : "mocha"
+  },
   "dependencies": {
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
-    "socket.io": "^4.0.1"
+    "socket.io": "^4.0.1",
+    "socket.io-client": "^4.4.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.1.3"
   }
 }
