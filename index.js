@@ -353,4 +353,10 @@ backend.on('connection', socket => {
         userMessage[room] = data;
         socket.to(room).emit('userMessage', data);
     });
+
+    socket.on('send', (instrument, parameters) => {
+        let room = getRoom(socket.id);
+        console.log(instrument, parameters)
+        socket.to(room).emit('send', instrument, ...parameters)
+    })
 })
