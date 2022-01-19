@@ -186,6 +186,11 @@ backend.on('connection', socket => {
         socket.to(room).emit('params::kick::'+parameter, data)
     })
 
+    socket.on('pattern', (instrument, parameter, pattern) => {
+        let room = getRoom(socket.id);
+        socket.to(room).emit('pattern', instrument, parameter, pattern);
+    })
+
     // METAL 1
     socket.on('params::metal1', (parameter, data) => {
         let room = getRoom(socket.id)
