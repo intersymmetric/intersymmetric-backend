@@ -54,7 +54,6 @@ let velocity = {};
 let length = {};
 let rooms = {};
 let users = {};
-let enabledStates = {};
 let pitchOffset = {};
 let maxCells = {};
 let prevInsertions = {};
@@ -109,20 +108,6 @@ backend.on('connection', socket => {
                 };
                 velocity[room] = 1.0;
                 length[room] = 1.0;
-                enabledStates[room] = {
-                    maxCells: true,
-                    pitchOffset: true,
-                    mirrorPoint: true,
-                    grid: true,
-                    bpm: true,
-                    euclid: true,
-                    offset: true,
-                    globalVelocity: true,
-                    globalLength: true,
-                    multiplier: true,
-                    transforms: true,
-                    velocityPattern: true,
-                };
                 maxCells[room] = 32,
                 prevInsertions[room] = [];
                 sampleSelectors[room] = [0, 1, 2, 3, 4, 5].map(sample => 0);
@@ -149,7 +134,6 @@ backend.on('connection', socket => {
             backend.to(room).emit('euclid', euclid[room]);
             backend.to(room).emit('velocity', velocity[room]);
             backend.to(room).emit('length', length[room]);
-            backend.to(room).emit('enabledStates', enabledStates[room]);
             backend.to(room).emit('maxCells', maxCells[room]);
             backend.to(room).emit('prevInsertions', prevInsertions[room]);
             backend.to(room).emit('pitchOffset', pitchOffset[room]);
@@ -278,13 +262,6 @@ backend.on('connection', socket => {
         let room = getRoom(socket.id);
         length[room] = data;
         socket.to(room).emit('length', data);
-    })
-
-    // ADMIN CONTROLS
-    socket.on('enabledStates', states => {
-        let room = getRoom(socket.id);
-        enabledStates[room] = states;
-        socket.to(room).emit('enabledStates', states)
     })
 
     socket.on('velocityList', (id, data) => {
