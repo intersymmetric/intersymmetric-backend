@@ -357,6 +357,6 @@ backend.on('connection', socket => {
     socket.on('send', (instrument, parameters) => {
         let room = getRoom(socket.id);
         console.log(instrument, parameters)
-        socket.to(room).emit('send', instrument, ...parameters)
+        socket.to(room).emit('send', instrument, parameters)
     })
 })
