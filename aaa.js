@@ -43,14 +43,20 @@ let fm2_listener = {};
 let perc_listener = {};
 
 // Modes/Direction
-let a_mode = {};
-let b_mode = {};
-let c_mode = {};
+let a_mode = {}, 
+    b_mode = {},
+    c_mode = {};
 
 // Duration/Pattern
-let a_steps = {};
-let b_steps = {};
-let c_steps = {};
+let a_steps_0 = {},
+    a_steps_1 = {},
+    a_steps_2 = {},
+    b_steps_0 = {},
+    b_steps_1 = {},
+    b_steps_2 = {},
+    c_steps_0 = {},
+    c_steps_1 = {},
+    c_steps_2 = {};
 
 // Synth Interface
 let fm1_freq_preset = {};
@@ -67,9 +73,9 @@ backend.on('connection', socket => {
     socket.on('join_room', room => {
         if (users[socket.id] !== room) { // Check if user is already in a room
             if (socket.id in users) {
-                let prevRoom = get_room(socket.id);
-                socket.leave(prevRoom);
-                rooms[prevRoom].num_users -= 1;
+                const prev_room = get_room(socket.id);
+                socket.leave(prev_room);
+                rooms[prev_room].num_users -= 1;
             }
             socket.join(room)
             users[socket.id] = room // Now log their room in the users database
@@ -86,9 +92,15 @@ backend.on('connection', socket => {
                 a_mode[room] = 0;
                 b_mode[room] = 0;
                 c_mode[room] = 0;
-                a_steps[room] = [5, 2, 3];
-                b_steps[room] = [1000, 10000, 1000];
-                c_steps[room] = [2, 4, 8];
+                a_steps_0[room] = 5;
+                a_steps_1[room] = 2;
+                a_steps_2[room] = 3;
+                b_steps_0[room] = 1000;
+                b_steps_1[room] = 1000;
+                b_steps_2[room] = 1000;
+                c_steps_0[room] = 2;
+                c_steps_1[room] = 4;
+                c_steps_2[room] = 8;
                 fm1_freq_preset[room] = 0;
                 fm1_mod_preset[room] = 0;
                 fm1_shape_preset[room] = 0;
@@ -107,9 +119,15 @@ backend.on('connection', socket => {
             backend.to(room).emit('a_mode', a_mode[room]);
             backend.to(room).emit('b_mode', b_mode[room]);
             backend.to(room).emit('c_mode', c_mode[room]);
-            backend.to(room).emit('a_steps', a_steps[room]);
-            backend.to(room).emit('b_steps', b_steps[room]);
-            backend.to(room).emit('c_steps', c_steps[room]);
+            backend.to(room).emit('a_steps_0', a_steps_0[room]);
+            backend.to(room).emit('a_steps_1', a_steps_1[room]);
+            backend.to(room).emit('a_steps_2', a_steps_2[room]);
+            backend.to(room).emit('b_steps_0', b_steps_0[room]);
+            backend.to(room).emit('b_steps_1', b_steps_1[room]);
+            backend.to(room).emit('b_steps_2', b_steps_2[room]);
+            backend.to(room).emit('c_steps_0', c_steps_0[room]);
+            backend.to(room).emit('c_steps_1', c_steps_1[room]);
+            backend.to(room).emit('c_steps_2', c_steps_2[room]);
             backend.to(room).emit('fm1_freq_preset', fm1_freq_preset[room]);
             backend.to(room).emit('fm1_mod_preset', fm1_mod_preset[room]);
             backend.to(room).emit('fm1_shape_preset', fm1_shape_preset[room]);
@@ -142,109 +160,147 @@ backend.on('connection', socket => {
 
     socket.on('fm1_listener', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm1_listener[room] = data;
+        console.log(fm1_listener);
         socket.to(room).emit('fm1_listener', data)
     });
 
     socket.on('fm2_listener', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm2_listener[room] = data;
         socket.to(room).emit('fm2_listener', data)
     });
 
     socket.on('perc_listener', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        perc_listener[room] = data;
         socket.to(room).emit('perc_listener', data)
     });
 
     socket.on('a_mode', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        a_mode[room] = data;
         socket.to(room).emit('a_mode', data)
     });
 
     socket.on('b_mode', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        b_mode[room] = data;
         socket.to(room).emit('b_mode', data)
     });
 
     socket.on('c_mode', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        c_mode[room] = data;
         socket.to(room).emit('c_mode', data)
     });
 
-    socket.on('a_steps', data => {
+    socket.on('a_steps_0', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
-        socket.to(room).emit('a_steps', data)
+        a_steps_0[room] = data;
+        console.log(a_steps_0)
+        socket.to(room).emit('a_steps_0', data)
     });
 
-    socket.on('b_steps', data => {
+    socket.on('a_steps_1', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
-        socket.to(room).emit('b_steps', data)
+        a_steps_1[room] = data;
+        socket.to(room).emit('a_steps_1', data)
     });
 
-    socket.on('c_steps', data => {
+    socket.on('a_steps_2', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
-        socket.to(room).emit('c_steps', data)
+        a_steps_2[room] = data;
+        socket.to(room).emit('a_steps_2', data)
+    });
+
+    socket.on('b_steps_0', data => {
+        let room = get_room(socket.id);
+        b_steps_0[room] = data;
+        socket.to(room).emit('b_steps_0', data)
+    });
+
+    socket.on('b_steps_1', data => {
+        let room = get_room(socket.id);
+        b_steps_1[room] = data;
+        socket.to(room).emit('b_steps_1', data)
+    });
+
+    socket.on('b_steps_2', data => {
+        let room = get_room(socket.id);
+        b_steps_2[room] = data;
+        socket.to(room).emit('b_steps_2', data)
+    });
+
+    socket.on('c_steps_0', data => {
+        let room = get_room(socket.id);
+        c_steps_0[room] = data;
+        socket.to(room).emit('c_steps_0', data)
+    });
+
+    socket.on('c_steps_1', data => {
+        let room = get_room(socket.id);
+        c_steps_1[room] = data;
+        socket.to(room).emit('c_steps_1', data)
+    });
+
+    socket.on('c_steps_2', data => {
+        let room = get_room(socket.id);
+        c_steps_2[room] = data;
+        socket.to(room).emit('c_steps_2', data)
     });
 
     socket.on('fm1_freq_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm1_freq_preset[room] = data;
         socket.to(room).emit('fm1_freq_preset', data)
     });
 
     socket.on('fm1_mod_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm1_mod_preset[room] = data;
         socket.to(room).emit('fm1_mod_preset', data)
     });
 
     socket.on('fm1_shape_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm1_shape_preset[room] = data;
         socket.to(room).emit('fm1_shape_preset', data)
     });
 
     socket.on('fm2_freq_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm2_freq_preset[room] = data;
         socket.to(room).emit('fm2_freq_preset', data)
     });
 
     socket.on('fm2_mod_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm2_mod_preset[room] = data;
         socket.to(room).emit('fm2_mod_preset', data)
     });
 
     socket.on('fm2_shape_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        fm2_shape_preset[room] = data;
         socket.to(room).emit('fm2_shape_preset', data)
     });
 
     socket.on('perc_sound_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        perc_sound_preset[room] = data;
         socket.to(room).emit('perc_sound_preset', data)
     });
 
     socket.on('perc_transpose_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        perc_transpose_preset[room] = data;
         socket.to(room).emit('perc_transpose_preset', data)
     });
 
     socket.on('perc_shape_preset', data => {
         let room = get_room(socket.id);
-        speed[room] = data;
+        perc_shape_preset[room] = data;
         socket.to(room).emit('perc_shape_preset', data)
     });
 })
