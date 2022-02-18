@@ -137,6 +137,7 @@ backend.on('connection', socket => {
             backend.to(room).emit('perc_sound_preset', perc_sound_preset[room]);
             backend.to(room).emit('perc_transpose_preset', perc_transpose_preset[room]);
             backend.to(room).emit('perc_shape_preset', perc_shape_preset[room]);
+            backend.to(room).emit('num_users', rooms[room].num_users);
         }
     })
 
