@@ -161,7 +161,6 @@ backend.on('connection', socket => {
     socket.on('fm1_listener', data => {
         let room = get_room(socket.id);
         fm1_listener[room] = data;
-        console.log(fm1_listener);
         socket.to(room).emit('fm1_listener', data)
     });
 
@@ -198,7 +197,6 @@ backend.on('connection', socket => {
     socket.on('a_steps_0', data => {
         let room = get_room(socket.id);
         a_steps_0[room] = data;
-        console.log(a_steps_0)
         socket.to(room).emit('a_steps_0', data)
     });
 
@@ -251,56 +249,92 @@ backend.on('connection', socket => {
     });
 
     socket.on('fm1_freq_preset', data => {
-        let room = get_room(socket.id);
-        fm1_freq_preset[room] = data;
-        socket.to(room).emit('fm1_freq_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm1_freq_preset[room] = data;
+            socket.to(room).emit('fm1_freq_preset', data)
+        } else {
+            console.log('fm1_freq_preset', data)
+        }
     });
 
     socket.on('fm1_mod_preset', data => {
-        let room = get_room(socket.id);
-        fm1_mod_preset[room] = data;
-        socket.to(room).emit('fm1_mod_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm1_mod_preset[room] = data;
+            socket.to(room).emit('fm1_mod_preset', data)
+        } else {
+            console.log('fm1_mod_preset', data)
+        }
     });
 
     socket.on('fm1_shape_preset', data => {
-        let room = get_room(socket.id);
-        fm1_shape_preset[room] = data;
-        socket.to(room).emit('fm1_shape_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm1_shape_preset[room] = data;
+            socket.to(room).emit('fm1_shape_preset', data)
+        } else {
+            console.log('fm1_shape_preset', data)
+        }
     });
 
     socket.on('fm2_freq_preset', data => {
-        let room = get_room(socket.id);
-        fm2_freq_preset[room] = data;
-        socket.to(room).emit('fm2_freq_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm2_freq_preset[room] = data;
+            socket.to(room).emit('fm2_freq_preset', data)
+        } else {
+            console.log('fm2_freq_preset', data)
+        }
     });
 
     socket.on('fm2_mod_preset', data => {
-        let room = get_room(socket.id);
-        fm2_mod_preset[room] = data;
-        socket.to(room).emit('fm2_mod_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm2_mod_preset[room] = data;
+            socket.to(room).emit('fm2_mod_preset', data)
+        } else {
+            console.log('fm2_mod_preset', data)
+        }
     });
 
     socket.on('fm2_shape_preset', data => {
-        let room = get_room(socket.id);
-        fm2_shape_preset[room] = data;
-        socket.to(room).emit('fm2_shape_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            fm2_shape_preset[room] = data;
+            socket.to(room).emit('fm2_shape_preset', data)
+        } else {
+            console.log('fm2_shape_preset', data)
+        }
     });
 
     socket.on('perc_sound_preset', data => {
-        let room = get_room(socket.id);
-        perc_sound_preset[room] = data;
-        socket.to(room).emit('perc_sound_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            perc_sound_preset[room] = data;
+            socket.to(room).emit('perc_sound_preset', data)
+        } else {
+            console.log('perc_sound_preset', data)
+        }
     });
 
     socket.on('perc_transpose_preset', data => {
-        let room = get_room(socket.id);
-        perc_transpose_preset[room] = data;
-        socket.to(room).emit('perc_transpose_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            perc_transpose_preset[room] = data;
+            socket.to(room).emit('perc_transpose_preset', data)
+        } else {
+            console.log('perc_transpose_preset', data)
+        }
     });
 
     socket.on('perc_shape_preset', data => {
-        let room = get_room(socket.id);
-        perc_shape_preset[room] = data;
-        socket.to(room).emit('perc_shape_preset', data)
+        if (typeof data === 'number') {
+            let room = get_room(socket.id);
+            perc_shape_preset[room] = data;
+            socket.to(room).emit('perc_shape_preset', data)
+        } else {
+            console.log('perc_shape_preset', data);
+        }
     });
 })
