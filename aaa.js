@@ -85,7 +85,7 @@ backend.on('connection', socket => {
                 rooms[room].num_users += 1
             } else {
                 rooms[room] = { num_users : 1 };
-                speed[room] = 1.0;
+                speed[room] = 6;
                 fm1_listener[room] = 0;
                 fm2_listener[room] = 0;
                 perc_listener[room] = 0;
