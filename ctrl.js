@@ -7,12 +7,13 @@ const port = 48000;
 const env = process.argv[2];
 
 let server;
-const certStorage = '/root/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/ctrl.intersymmetric.xyz/'
+const certStorage = '/root/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/'
+const certApplication = 'ctrl.intersymmetric.xyz/'
 
 if (env == 'live') {
-    let privateKey = fs.readFileSync(certStorage + 'ctrl.intersymmetric.xyz.key', 'utf8');
-    let certificate = fs.readFileSync(certStorage + 'ctrl.intersymmetric.xyz.crt', 'utf8');
-    let credentials = {key : privateKey, cert: certificate}
+    const privateKey = fs.readFileSync(certStorage + certApplication + 'ctrl.intersymmetric.xyz.key', 'utf8');
+    const certificate = fs.readFileSync(certStorage + certApplication + 'ctrl.intersymmetric.xyz.crt', 'utf8');
+    const credentials = {key : privateKey, cert: certificate}
     server = https.createServer(credentials).listen(port);
     console.log('Booting SSL/HTTPS Server')
 } else {
