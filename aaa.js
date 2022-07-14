@@ -9,8 +9,8 @@ const env = process.argv[2];
 let server;
 
 if (env == 'live') {
-    let privateKey = fs.readFileSync('/etc/letsencrypt/live/aaabackend.xyz/privkey.pem', 'utf8');
-    let certificate = fs.readFileSync('/etc/letsencrypt/live/aaabackend.xyz/fullchain.pem', 'utf8');
+    let privateKey = fs.readFileSync('/etc/letsencrypt/live/aaa.intersymmetric.xyz/privkey.pem', 'utf8');
+    let certificate = fs.readFileSync('/etc/letsencrypt/live/aaa.intersymmetric.xyz/fullchain.pem', 'utf8');
     let credentials = {key : privateKey, cert: certificate}
     server = https.createServer(credentials).listen(port);
     console.log('Booting SSL/HTTPS Server')
