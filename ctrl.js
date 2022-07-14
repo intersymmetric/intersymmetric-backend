@@ -66,5 +66,4 @@ backend.on('connection', socket => {
         slider3 = data
         socket.broadcast.emit('slider3', data)
     })
-
 })
