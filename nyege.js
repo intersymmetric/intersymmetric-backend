@@ -30,17 +30,56 @@ const backend = io(server, {
 );
 console.log('Created Backend')
 
-const get_room = id => users[id] // get room that user belongs to
+const getRoom = id => users[id] // get room that user belongs to
 
 // State
-let users = {};
-let rooms = {};
+let users = {}
+let rooms = {}
+
+let buf0 = {},
+    buf1 = {},
+    buf2 = {},
+    buf3 = {},
+    buf4 = {},
+    buf5 = {},
+    buf6 = {};
+
+let pitch0 = {},
+    pitch1 = {},
+    pitch2 = {},
+    pitch3 = {},
+    pitch4 = {},
+    pitch5 = {},
+    scale = {};
+
+let len0 = {},
+    len1 = {},
+    len2 = {},
+    len3 = {},
+    len4 = {},
+    len5 = {},
+    len6 = {};
+
+let rslidermin = {},
+    rslidermax = {};
+
+let div0 = {},
+    div1 = {},
+    div2 = {},
+    div3 = {};
+
+let range0 = {},
+    range1 = {},
+    range2 = {},
+    range3 = {};
+
+
 
 backend.on('connection', socket => {
     socket.on('join_room', room => {
         if (users[socket.id] !== room) { // Check if user is already in a room
             if (socket.id in users) {
-                const prev_room = get_room(socket.id);
+                const prev_room = getRoom(socket.id);
                 socket.leave(prev_room);
                 rooms[prev_room].num_users -= 1;
             }
@@ -61,7 +100,7 @@ backend.on('connection', socket => {
     // When a user disconnects update the number of users
     socket.on('disconnect', (user) => {
         console.log(socket.id, 'left');
-        let room = get_room(socket.id);
+        let room = getRoom(socket.id);
         socket.leave(room);
         delete users[socket.id];
         if (room) {
