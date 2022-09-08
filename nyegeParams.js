@@ -32,6 +32,8 @@ module.exports = {
   range3: 16,
   retrig0: 0,
   retrig1: 0,
+  retrigGate0: 0,
+  retrigGate1: 0,
   chordfollow: 0,
   chordspread: 5,
   chordlow: 10,
