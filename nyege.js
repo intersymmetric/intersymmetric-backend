@@ -93,7 +93,7 @@ backend.on("connection", (socket) => {
 
   Object.keys(state).forEach((x) => {
     //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
-    https: (() => {
+    (() => {
       socket.on(x, (data) => {
         const room = getRoom(socket.id);
         state[x][room] = data;
