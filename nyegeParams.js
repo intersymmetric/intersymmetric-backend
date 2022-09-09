@@ -1,5 +1,5 @@
 module.exports = {
-  rate: 0.2,
+  rate: 170,
   globalCycle: 16,
   buf0: 0,
   buf1: 13,
