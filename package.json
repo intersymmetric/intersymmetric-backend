@@ -2,7 +2,11 @@
   "dependencies": {
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
-    "socket.io": "^4.4.1"
+    "lokijs": "^1.5.12",
+    "lowdb": "^3.0.0",
+    "pouchdb": "^7.3.0",
+    "socket.io": "^4.4.1",
+    "sqlite3": "^5.1.1"
   },
   "devDependencies": {
     "prettier": "^2.7.1"
