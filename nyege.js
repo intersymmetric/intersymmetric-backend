@@ -91,6 +91,12 @@ backend.on("connection", (socket) => {
     }
   });
 
+  socket.on("dump", payload => {
+    console.log(payload)
+    console.log(state)
+    socket.emit('dump', state)
+  })
+
   Object.keys(state).forEach((x) => {
     //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
     (() => {
