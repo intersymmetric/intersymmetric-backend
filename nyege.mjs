@@ -72,6 +72,7 @@ backend.on("connection", (socket) => {
     if (await db.get(room) === undefined) {
       await db.put(room, clone(template))
     }
+    // replace with getValues()
     Object.entries(await db.get(room)).forEach(([k, v]) => {
       (() => {
         backend.to(room).emit(k, v);
