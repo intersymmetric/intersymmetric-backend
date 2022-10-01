@@ -1,4 +1,4 @@
-module.exports = {
+export const template = {
   rate: 170,
   globalCycle: 16,
   buf0: 0,
