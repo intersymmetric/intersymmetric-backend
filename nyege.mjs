@@ -88,7 +88,7 @@ backend.on("connection", (socket) => {
     socket.join(room);
     backend.to(room).emit("users", getNumUsers(room));
 
-    if (await db.get(room) === undefined) {
+    if (await !db.doesExist(room)) {
       await db.put(room, clone(template))
     }
     // replace with getValues()
