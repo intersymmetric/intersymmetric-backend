@@ -1,11 +1,11 @@
-// const fs = require("fs");
+import _ from 'lodash';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { Server } from 'socket.io';
 import { template } from './nyegeParams.mjs'
 import { open } from 'lmdb';
-import { clone } from './core.mjs'
+import { clone } from './core.mjs';
 
 const port = 49124;
 const env = process.argv[2];
@@ -69,14 +69,19 @@ setInterval(async() => {
       if (await db.doesExist('snapshots')) {
         const snapshots = await db.get('snapshots')
         snapshots.push(payload)
-        const dedup = Array.from(new Set(snapshots))
+        const dedup = snapshots.reduce((unique, o) => {
+          if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
+            unique.push(o);
+          }
+          return unique;
+        },[]);
         await db.put('snapshots', dedup)
       } else {
         await db.put('snapshots', [payload])
       }
     })
   }
-}, 300000)
+}, 1000)
 
 backend.on("connection", (socket) => {
   socket.on("join_room", async(room) => {
