@@ -81,7 +81,7 @@ setInterval(async() => {
       }
     })
   }
-}, 1000)
+}, 300000)
 
 backend.on("connection", (socket) => {
   socket.on("join_room", async(room) => {
