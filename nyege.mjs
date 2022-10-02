@@ -69,7 +69,8 @@ setInterval(async() => {
       if (await db.doesExist('snapshots')) {
         const snapshots = await db.get('snapshots')
         snapshots.push(payload)
-        await db.put('snapshots', snapshots)
+        const dedup = Array.from(new Set(snapshots))
+        await db.put('snapshots', dedup)
       } else {
         await db.put('snapshots', [payload])
       }
