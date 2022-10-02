@@ -1,27 +1,26 @@
-import _ from 'lodash';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { open } from 'lmdb';
 import { Server } from 'socket.io';
-import { template } from './nyegeParams.mjs'
+import { template } from './aaaParams.mjs';
 import { clone, getNumUsers } from './core.mjs';
 
-const port = 49124;
+const port = 49123;
 const env = process.argv[2];
 
 let server;
 const certStorage =
   "/root/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/";
-const certApplication = "nyege-server.intersymmetric.xyz/";
+const certApplication = "aaa.intersymmetric.xyz/";
 
 if (env == "live") {
   const privateKey = fs.readFileSync(
-    certStorage + certApplication + "nyege-server.intersymmetric.xyz.key",
+    certStorage + certApplication + "aaa.intersymmetric.xyz.key",
     "utf8"
   );
   const certificate = fs.readFileSync(
-    certStorage + certApplication + "nyege-server.intersymmetric.xyz.crt",
+    certStorage + certApplication + "aaa.intersymmetric.xyz.crt",
     "utf8"
   );
   const credentials = { key: privateKey, cert: certificate };
@@ -41,37 +40,11 @@ const backend = new Server(server, {
 console.log("Created Backend");
 
 let db = open({
-  path: 'nnnb',
+  path: 'aaa',
   compression: true
 })
 
 let users = new Map();
-
-setInterval(async() => {
-  if (await db.doesExist('nnnb.room1')) {
-    await db.transaction(async() => {
-      // Get Snapshot
-      const state = await db.get('nnnb.room1');
-      const payload = {
-        time: new Date().toString(),
-        state: state
-      }
-      if (await db.doesExist('snapshots')) {
-        const snapshots = await db.get('snapshots')
-        snapshots.push(payload)
-        const dedup = snapshots.reduce((unique, o) => {
-          if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
-            unique.push(o);
-          }
-          return unique;
-        },[]);
-        await db.put('snapshots', dedup)
-      } else {
-        await db.put('snapshots', [payload])
-      }
-    })
-  }
-}, 300000)
 
 backend.on("connection", (socket) => {
   socket.on("join_room", async(room) => {
@@ -93,18 +66,6 @@ backend.on("connection", (socket) => {
     })
   });
 
-  // When a user disconnects update the number of users
-  socket.on("disconnect", async() => {
-    const room = users.get(socket.id);
-    socket.leave(room);
-    users.delete(socket.id)
-    backend.to(room).emit("users", getNumUsers(room, users));
-  });
-
-  socket.on('getSnapshots', async() => {
-    socket.emit('snapshots', await db.get('snapshots'))
-  })
-
   Object.keys(template).forEach((key) => {
     //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
     (() => {
@@ -118,5 +79,13 @@ backend.on("connection", (socket) => {
         socket.to(room).emit(key, data);
       });
     })();
+  });
+
+  // When a user disconnects update the number of users
+  socket.on("disconnect", (user) => {
+    const room = users.get(socket.id);
+    socket.leave(room);
+    users.delete(socket.id)
+    backend.to(room).emit("users", getNumUsers(room, users));
   });
 });
