@@ -5,6 +5,7 @@ import https from 'https';
 import { Server } from 'socket.io';
 import { template } from './nyegeParams.mjs'
 import { open } from 'lmdb';
+import { clone } from './core.mjs'
 
 const port = 49124;
 const env = process.argv[2];
@@ -45,9 +46,6 @@ let db = open({
 })
 
 let users = new Map();
-const clone = obj => {
-  return JSON.parse(JSON.stringify(obj))
-}
 
 const getNumUsers = (room) => {
   let count = 0;
@@ -58,6 +56,26 @@ const getNumUsers = (room) => {
   }
   return count
 }
+
+setInterval(async() => {
+  if (await db.doesExist('nnnb.room1')) {
+    await db.transaction(async() => {
+      // Get Snapshot
+      const state = await db.get('nnnb.room1');
+      const payload = {
+        time: new Date().toString(),
+        state: state
+      }
+      if (await db.doesExist('snapshots')) {
+        const snapshots = await db.get('snapshots')
+        snapshots.push(payload)
+        await db.put('snapshots', snapshots)
+      } else {
+        await db.put('snapshots', [payload])
+      }
+    })
+  }
+}, 300000)
 
 backend.on("connection", (socket) => {
   socket.on("join_room", async(room) => {
@@ -88,6 +106,10 @@ backend.on("connection", (socket) => {
 
     backend.to(room).emit("users", getNumUsers(room));
   });
+
+  socket.on('getSnapshots', async() => {
+    socket.emit('snapshots', await db.get('snapshots'))
+  })
 
   Object.keys(template).forEach((key) => {
     //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
