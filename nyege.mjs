@@ -109,13 +109,15 @@ backend.on("connection", (socket) => {
     //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
     (() => {
       socket.on(key, async(data) => {
-        const room = users.get(socket.id)
-        await db.transaction(async() => {
-          const update = await db.get(room)
-          update[key] = data
-          await db.put(room, update)
-        })
-        socket.to(room).emit(key, data);
+        const room = users.get(socket.id);
+        if (await db.doesExist(room)) {
+          await db.transaction(async() => {
+            const update = await db.get(room)
+            update[key] = data
+            await db.put(room, update)
+          })
+          socket.to(room).emit(key, data);
+        }
       });
     })();
   });
