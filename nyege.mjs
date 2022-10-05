@@ -49,27 +49,25 @@ let users = new Map();
 
 setInterval(async() => {
   if (await db.doesExist('nnnb.room1')) {
-    await db.transaction(async() => {
-      // Get Snapshot
-      const state = await db.get('nnnb.room1');
-      const payload = {
-        time: new Date().toString(),
-        state: state
-      }
-      if (await db.doesExist('snapshots')) {
-        const snapshots = await db.get('snapshots')
-        snapshots.push(payload)
-        const dedup = snapshots.reduce((unique, o) => {
-          if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
-            unique.push(o);
-          }
-          return unique;
-        },[]);
-        await db.put('snapshots', dedup)
-      } else {
-        await db.put('snapshots', [payload])
-      }
-    })
+    // Get Snapshot
+    const state = await db.get('nnnb.room1');
+    const payload = {
+      time: new Date().toString(),
+      state: state
+    }
+    if (await db.doesExist('snapshots')) {
+      const snapshots = await db.get('snapshots')
+      snapshots.push(payload)
+      const dedup = snapshots.reduce((unique, o) => {
+        if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
+          unique.push(o);
+        }
+        return unique;
+      },[]);
+      await db.put('snapshots', dedup)
+    } else {
+      await db.put('snapshots', [payload])
+    }
   }
 }, 300000)
 
@@ -110,7 +108,7 @@ backend.on("connection", (socket) => {
     (() => {
       socket.on(key, async(data) => {
         const room = users.get(socket.id);
-        if (await db.doesExist(room)) {
+        if (await db.doesExist(room) && room !== undefined) {
           await db.transaction(async() => {
             const update = await db.get(room)
             update[key] = data
