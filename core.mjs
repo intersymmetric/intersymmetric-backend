@@ -11,3 +11,11 @@ export const getNumUsers = (room, users) => {
 	}
 	return count
 }
+
+export const conformTemplate = (data, constraints) => {
+	if ("enum" in constraints) {
+		return constraints.enum.includes(data) && data !== null;
+	} else {
+		return (data >= constraints.min && data <= constraints.max) && data !== null
+	}
+}
