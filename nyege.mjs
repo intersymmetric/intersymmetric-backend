@@ -19,108 +19,113 @@ if (env == "live") {
     const privateKey = fs.readFileSync(
         certStorage + certApplication + "nyege-server.intersymmetric.xyz.key",
         "utf8"
-        );
-        const certificate = fs.readFileSync(
-            certStorage + certApplication + "nyege-server.intersymmetric.xyz.crt",
-            "utf8"
-            );
-            const credentials = { key: privateKey, cert: certificate };
-            server = https.createServer(credentials).listen(port);
-            console.log("Booting SSL/HTTPS Server");
-        } else {
-            server = http.createServer().listen(port);
-            console.log("Booting HTTP Server");
+    );
+
+    const certificate = fs.readFileSync(
+        certStorage + certApplication + "nyege-server.intersymmetric.xyz.crt",
+        "utf8"
+    );
+    const credentials = { key: privateKey, cert: certificate };
+        server = https.createServer(credentials).listen(port);
+        console.log("Booting SSL/HTTPS Server");
+    } else {
+        server = http.createServer().listen(port);
+        console.log("Booting HTTP Server");
+    }
+    
+    const backend = new Server(server, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+        },
+    });
+    console.log("Created Backend");
+    
+    let db = open({
+        path: 'nnnb',
+        compression: true
+    })
+    
+    let users = new Map();
+    
+    setInterval(async() => {
+        if (await db.doesExist('nnnb.room1')) {
+            // Get Snapshot
+            const state = await db.get('nnnb.room1');
+            const payload = {
+                time: new Date().toString(),
+                state: state
+            }
+            if (await db.doesExist('snapshots')) {
+                const snapshots = await db.get('snapshots')
+                snapshots.push(payload)
+                const dedup = snapshots.reduce((unique, o) => {
+                    if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
+                        unique.push(o);
+                    }
+                    return unique;
+                },[]);
+                await db.put('snapshots', dedup)
+            } else {
+                await db.put('snapshots', [payload])
+            }
         }
-        
-        const backend = new Server(server, {
-            cors: {
-                origin: "*",
-                methods: ["GET", "POST"],
-            },
+    }, 300000)
+    
+    backend.on("connection", (socket) => {
+        socket.on("join_room", async(room) => {
+            if (users.has(socket.id)) { // Does the user belong to a room?
+                socket.leave(users.get(socket.id))
+            }
+            users.set(socket.id, room);
+            socket.join(room);
+            backend.to(room).emit("users", getNumUsers(room, users));
+            
+            if (await !db.doesExist(room)) {
+                let formattedTemplate = {};
+                Object.entries(template).forEach(([k, v]) => {
+                    formattedTemplate[k] = v.value;
+                });
+                await db.put(room, formattedTemplate);
+            }
+            
+            Object.entries(await db.get(room)).forEach(([k, v]) => {
+                (() => {
+                    backend.to(room).emit(k, v);
+                })();
+            })
         });
-        console.log("Created Backend");
         
-        let db = open({
-            path: 'nnnb',
-            compression: true
+        // When a user disconnects update the number of users
+        socket.on("disconnect", async() => {
+            const room = users.get(socket.id);
+            socket.leave(room);
+            users.delete(socket.id)
+            backend.to(room).emit("users", getNumUsers(room, users));
+        });
+        
+        socket.on('getSnapshots', async() => {
+            socket.emit('snapshots', await db.get('snapshots'))
         })
         
-        let users = new Map();
-        
-        setInterval(async() => {
-            if (await db.doesExist('nnnb.room1')) {
-                // Get Snapshot
-                const state = await db.get('nnnb.room1');
-                const payload = {
-                    time: new Date().toString(),
-                    state: state
-                }
-                if (await db.doesExist('snapshots')) {
-                    const snapshots = await db.get('snapshots')
-                    snapshots.push(payload)
-                    const dedup = snapshots.reduce((unique, o) => {
-                        if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
-                            unique.push(o);
-                        }
-                        return unique;
-                    },[]);
-                    await db.put('snapshots', dedup)
-                } else {
-                    await db.put('snapshots', [payload])
-                }
-            }
-        }, 300000)
-        
-        backend.on("connection", (socket) => {
-            socket.on("join_room", async(room) => {
-                if (users.has(socket.id)) { // Does the user belong to a room?
-                    socket.leave(users.get(socket.id))
-                }
-                users.set(socket.id, room);
-                socket.join(room);
-                backend.to(room).emit("users", getNumUsers(room, users));
-                
-                if (await !db.doesExist(room)) {
-                    await db.put(room, clone(template))
-                }
-                
-                Object.entries(await db.get(room)).forEach(([k, v]) => {
-                    (() => {
-                        backend.to(room).emit(k, v.value);
-                    })();
-                })
-            });
-            
-            // When a user disconnects update the number of users
-            socket.on("disconnect", async() => {
-                const room = users.get(socket.id);
-                socket.leave(room);
-                users.delete(socket.id)
-                backend.to(room).emit("users", getNumUsers(room, users));
-            });
-            
-            socket.on('getSnapshots', async() => {
-                socket.emit('snapshots', await db.get('snapshots'))
-            })
-            
-            Object.keys(template).forEach(key => {
-                //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
-                (() => {
-                    socket.on(key, async(data) => {
-                        if (conformTemplate(data, template[key])) {
-                            const room = users.get(socket.id);
-                            if (await db.doesExist(room) && room !== undefined) {
-                                await db.transaction(async() => {
-                                    const update = await db.get(room)
-                                    update[key] = data
-                                    await db.put(room, update)
-                                })
-                                socket.to(room).emit(key, data);
-                            }
-                        }
-                        
-                    });
-                })();
-            });
+        Object.keys(template).forEach(key => {
+            //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
+            (() => {
+                socket.on(key, async(data) => {
+                    const room = users.get(socket.id);
+                    const isValid = await db.doesExist(room) && room !== undefined && 
+                        conformTemplate(data, template[key])
+                    
+                        if (isValid) {
+                        await db.transaction(async() => {
+                            const stored = await db.get(room)
+                            stored[key] = data
+                            await db.put(room, stored)
+                        })
+                        socket.to(room).emit(key, data);
+                    }
+                });
+            })();
         });
+    });
         
