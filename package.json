@@ -8,5 +8,9 @@
   },
   "devDependencies": {
     "prettier": "^2.7.1"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^5.0.10"
   }
 }
