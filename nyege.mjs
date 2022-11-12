@@ -116,7 +116,7 @@ if (env == "live") {
                     const isValid = await db.doesExist(room) && room !== undefined && 
                         conformTemplate(data, template[key])
                     
-                        if (isValid) {
+                    if (isValid) {
                         await db.transaction(async() => {
                             const stored = await db.get(room)
                             stored[key] = data
