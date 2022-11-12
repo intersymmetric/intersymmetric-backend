@@ -3,3 +3,4 @@
 ssl-certs/
 .DS_Store
 log.txt
+*.mdb
