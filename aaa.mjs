@@ -1,7 +1,7 @@
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import { open } from 'lmdb';
+// import { open } from 'lmdb';
 import { Server } from 'socket.io';
 import { template } from './aaaParams.mjs';
 import { clone, getNumUsers } from './core.mjs';
@@ -39,12 +39,13 @@ const backend = new Server(server, {
 });
 console.log("Created Backend");
 
-let db = open({
-  path: 'aaa',
-  compression: true
-})
+// let db = open({
+//   path: 'aaa',
+//   compression: true
+// })
 
 let users = new Map();
+let state = {};
 
 backend.on("connection", (socket) => {
   socket.on("join_room", async(room) => {
@@ -55,11 +56,11 @@ backend.on("connection", (socket) => {
     socket.join(room);
     backend.to(room).emit("users", getNumUsers(room, users));
 
-    if (await !db.doesExist(room)) {
-      await db.put(room, clone(template))
-    }
+    if (!state.hasOwnProperty(room)) {
+      state[room] = clone(template);
+    } 
 
-    Object.entries(await db.get(room)).forEach(([k, v]) => {
+    Object.entries(state[room]).forEach(([k, v]) => {
       (() => {
         backend.to(room).emit(k, v);
       })();
@@ -71,11 +72,11 @@ backend.on("connection", (socket) => {
     (() => {
       socket.on(key, async(data) => {
         const room = users.get(socket.id)
-        await db.transaction(async() => {
-          const update = await db.get(room)
-          update[key] = data
-          await db.put(room, update)
-        })
+        // await db.transaction(async() => {
+        //   const update = await db.get(room)
+        //   update[key] = data
+        //   await db.put(room, update)
+        // })
         socket.to(room).emit(key, data);
       });
     })();
