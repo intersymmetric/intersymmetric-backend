@@ -124,6 +124,7 @@ if (env == "live") {
                         //     stored[key] = data
                         //     await db.put(room, stored)
                         // })
+                        state[room][key] = data
                         socket.to(room).emit(key, data);
                     }
                 });

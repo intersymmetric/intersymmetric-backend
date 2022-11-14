@@ -77,6 +77,7 @@ backend.on("connection", (socket) => {
         //   update[key] = data
         //   await db.put(room, update)
         // })
+        state[room][key] = data;
         socket.to(room).emit(key, data);
       });
     })();
