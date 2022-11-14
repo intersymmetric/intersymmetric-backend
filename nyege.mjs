@@ -41,36 +41,37 @@ if (env == "live") {
     });
     console.log("Created Backend");
     
-    let db = open({
-        path: 'nnnb',
-        compression: true
-    })
+    // let db = open({
+    //     path: 'nnnb',
+    //     compression: true
+    // })
     
     let users = new Map();
+    let state = {};
     
-    setInterval(async() => {
-        if (await db.doesExist('nnnb.room1')) {
-            // Get Snapshot
-            const state = await db.get('nnnb.room1');
-            const payload = {
-                time: new Date().toString(),
-                state: state
-            }
-            if (await db.doesExist('snapshots')) {
-                const snapshots = await db.get('snapshots')
-                snapshots.push(payload)
-                const dedup = snapshots.reduce((unique, o) => {
-                    if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
-                        unique.push(o);
-                    }
-                    return unique;
-                },[]);
-                await db.put('snapshots', dedup)
-            } else {
-                await db.put('snapshots', [payload])
-            }
-        }
-    }, 300000)
+    // setInterval(async() => {
+    //     if (await db.doesExist('nnnb.room1')) {
+    //         // Get Snapshot
+    //         const state = await db.get('nnnb.room1');
+    //         const payload = {
+    //             time: new Date().toString(),
+    //             state: state
+    //         }
+    //         if (await db.doesExist('snapshots')) {
+    //             const snapshots = await db.get('snapshots')
+    //             snapshots.push(payload)
+    //             const dedup = snapshots.reduce((unique, o) => {
+    //                 if(!unique.some(obj => _.isEqual(obj.state, o.state))) {
+    //                     unique.push(o);
+    //                 }
+    //                 return unique;
+    //             },[]);
+    //             await db.put('snapshots', dedup)
+    //         } else {
+    //             await db.put('snapshots', [payload])
+    //         }
+    //     }
+    // }, 300000)
     
     backend.on("connection", (socket) => {
         socket.on("join_room", async(room) => {
@@ -81,15 +82,16 @@ if (env == "live") {
             socket.join(room);
             backend.to(room).emit("users", getNumUsers(room, users));
             
-            if (await !db.doesExist(room)) {
+            if (!state.hasOwnProperty(room)) {
                 let formattedTemplate = {};
                 Object.entries(template).forEach(([k, v]) => {
                     formattedTemplate[k] = v.value;
                 });
-                await db.put(room, formattedTemplate);
+
+                state[room] = formattedTemplate; 
             }
             
-            Object.entries(await db.get(room)).forEach(([k, v]) => {
+            Object.entries(state[room]).forEach(([k, v]) => {
                 (() => {
                     backend.to(room).emit(k, v);
                 })();
@@ -104,24 +106,24 @@ if (env == "live") {
             backend.to(room).emit("users", getNumUsers(room, users));
         });
         
-        socket.on('getSnapshots', async() => {
-            socket.emit('snapshots', await db.get('snapshots'))
-        })
+        // socket.on('getSnapshots', async() => {
+        //     socket.emit('snapshots', await db.get('snapshots'))
+        // })
         
         Object.keys(template).forEach(key => {
             //stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values
             (() => {
                 socket.on(key, async(data) => {
                     const room = users.get(socket.id);
-                    const isValid = await db.doesExist(room) && room !== undefined && 
+                    const isValid = state.hasOwnProperty(room) && room !== undefined && 
                         conformTemplate(data, template[key])
                     
                     if (isValid) {
-                        await db.transaction(async() => {
-                            const stored = await db.get(room)
-                            stored[key] = data
-                            await db.put(room, stored)
-                        })
+                        // await db.transaction(async() => {
+                        //     const stored = await db.get(room)
+                        //     stored[key] = data
+                        //     await db.put(room, stored)
+                        // })
                         socket.to(room).emit(key, data);
                     }
                 });
